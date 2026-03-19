@@ -619,7 +619,7 @@ export type Database = {
     }
     Enums: {
       access_status: "active" | "expired" | "revoked"
-      app_role: "admin" | "moderator" | "content_manager" | "user"
+      app_role: "admin" | "moderator" | "content_manager" | "user" | "manager"
       content_type: "video" | "text" | "pdf" | "mixed"
       course_status: "draft" | "published" | "hidden"
       discount_type: "percent" | "fixed"
@@ -759,7 +759,7 @@ export const Constants = {
   public: {
     Enums: {
       access_status: ["active", "expired", "revoked"],
-      app_role: ["admin", "moderator", "content_manager", "user"],
+      app_role: ["admin", "moderator", "content_manager", "user", "manager"],
       content_type: ["video", "text", "pdf", "mixed"],
       course_status: ["draft", "published", "hidden"],
       discount_type: ["percent", "fixed"],
