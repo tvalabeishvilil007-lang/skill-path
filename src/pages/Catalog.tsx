@@ -1,17 +1,43 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CourseCard from "@/components/CourseCard";
-import { mockCourses, categories } from "@/data/mockCourses";
+import { useCourses, useCategories } from "@/hooks/useCourses";
+import { mockCourses, categories as mockCategories } from "@/data/mockCourses";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 
 const Catalog = () => {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("Все");
+  const { data: dbCourses, isLoading } = useCourses();
+  const { data: dbCategories } = useCategories();
 
-  const filtered = mockCourses.filter((c) => {
+  const categories = dbCategories
+    ? ["Все", ...dbCategories.map((c) => c.name)]
+    : mockCategories;
+
+  // Use DB courses if available, fallback to mock
+  const courses = dbCourses && dbCourses.length > 0
+    ? dbCourses.map((c) => ({
+        id: c.id,
+        title: c.title,
+        slug: c.slug,
+        shortDescription: c.short_description || "",
+        category: (c.categories as any)?.name || "",
+        price: Number(c.price),
+        oldPrice: c.old_price ? Number(c.old_price) : null,
+        duration: c.duration || "",
+        lessonsCount: 0,
+        modulesCount: 0,
+        level: c.level || "",
+        coverUrl: c.cover_url || "",
+        isFeatured: c.is_featured,
+      }))
+    : mockCourses;
+
+  const filtered = courses.filter((c) => {
     const matchesSearch = c.title.toLowerCase().includes(search.toLowerCase());
     const matchesCat = activeCategory === "Все" || c.category === activeCategory;
     return matchesSearch && matchesCat;
@@ -32,12 +58,7 @@ const Catalog = () => {
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Поиск курсов..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
+              <Input placeholder="Поиск курсов..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
             </div>
             <div className="flex gap-2 flex-wrap">
               {categories.map((cat) => (
@@ -53,12 +74,16 @@ const Catalog = () => {
             </div>
           </div>
 
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-12">Курсы не найдены</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((course) => (
-                <CourseCard key={course.id} course={course} />
+                <CourseCard key={course.id} course={course as any} />
               ))}
             </div>
           )}
