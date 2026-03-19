@@ -586,6 +586,53 @@ export type Database = {
           },
         ]
       }
+      requests: {
+        Row: {
+          comment: string | null
+          course_id: string
+          created_at: string
+          id: string
+          manager_id: string | null
+          phone: string | null
+          status: Database["public"]["Enums"]["request_status"]
+          telegram: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          course_id: string
+          created_at?: string
+          id?: string
+          manager_id?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          telegram: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          course_id?: string
+          created_at?: string
+          id?: string
+          manager_id?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          telegram?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requests_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -631,6 +678,13 @@ export type Database = {
         | "rejected"
         | "refunded"
         | "canceled"
+      request_status:
+        | "new"
+        | "in_progress"
+        | "awaiting_payment"
+        | "paid"
+        | "access_granted"
+        | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -771,6 +825,14 @@ export const Constants = {
         "rejected",
         "refunded",
         "canceled",
+      ],
+      request_status: [
+        "new",
+        "in_progress",
+        "awaiting_payment",
+        "paid",
+        "access_granted",
+        "rejected",
       ],
     },
   },
