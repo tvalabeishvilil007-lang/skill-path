@@ -6,8 +6,8 @@ import {
 } from "@/components/ui/sidebar";
 import { NavLink } from "@/components/NavLink";
 import {
-  LayoutDashboard, FolderOpen, BookOpen, Layers, Play, CreditCard,
-  Users, Receipt, Loader2, FileText, ArrowLeft, ShieldCheck,
+  LayoutDashboard, FolderOpen, BookOpen, Layers, Play,
+  Users, Receipt, Loader2, FileText, ArrowLeft, ShieldCheck, ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
