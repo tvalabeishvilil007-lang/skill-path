@@ -18,6 +18,7 @@ const Header = () => {
   const authLinks = [
     { to: "/dashboard", label: "Кабинет" },
     { to: "/catalog", label: "Каталог" },
+    { to: "/my-plan", label: "Мой тариф" },
   ];
 
   const links = user ? authLinks : publicLinks;

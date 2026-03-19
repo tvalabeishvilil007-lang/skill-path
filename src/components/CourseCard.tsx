@@ -1,36 +1,46 @@
 import { Course } from "@/types/course";
 import { Link } from "react-router-dom";
-import { Clock, BookOpen, BarChart, Lock, ArrowRight, Crown } from "lucide-react";
+import { Clock, BookOpen, BarChart, Lock, ArrowRight, Crown, Sparkles, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TierLevel, TIER_CONFIG, canAccess, getRequiredTierForCourse } from "@/lib/tiers";
 import { useTier } from "@/contexts/TierContext";
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("ru-RU").format(price) + " ₽";
+import UpgradePrompt from "@/components/UpgradePrompt";
 
 const CourseCard = ({ course }: { course: Course }) => {
   const { tier } = useTier();
   const requiredTier = getRequiredTierForCourse(course.id);
   const hasAccess = canAccess(tier.level, requiredTier);
   const isPremiumCourse = requiredTier === "premium";
+  const isOptimalCourse = requiredTier === "optimal";
   const config = TIER_CONFIG[requiredTier];
 
-  if (!hasAccess && tier.level !== "none") {
-    // Locked card
+  // Content status badges
+  const isNew = Number(course.id) >= 5;
+  const isPopular = course.isFeatured;
+
+  if (!hasAccess) {
     return (
       <div className="group block rounded-2xl border border-border bg-card overflow-hidden relative">
-        {/* Locked overlay */}
-        <div className="absolute inset-0 z-10 bg-background/70 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
-            <Lock className="h-6 w-6 text-muted-foreground" />
+        {/* Locked overlay with upgrade prompt */}
+        <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center space-y-4">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isPremiumCourse ? "bg-warning/10" : "bg-muted"}`}>
+            {isPremiumCourse ? <Crown className="h-6 w-6 text-warning" /> : <Lock className="h-6 w-6 text-muted-foreground" />}
           </div>
-          <div className="space-y-1">
-            <p className="font-semibold text-sm">Доступно на тарифе</p>
-            <Badge className={config.badgeCls}>{config.name}</Badge>
+          <div className="space-y-1.5">
+            <p className="font-semibold text-sm">
+              {isPremiumCourse ? "Premium-контент" : "Заблокировано"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Доступно на тарифе
+            </p>
+            <Badge className={config.badgeCls}>
+              {isPremiumCourse && <Crown className="h-3 w-3 mr-1" />}
+              {config.name}
+            </Badge>
           </div>
-          <Button size="sm" variant="outline" asChild>
-            <Link to="/pricing" className="gap-1.5">
+          <Button size="sm" variant={isPremiumCourse ? "accent" : "outline"} asChild>
+            <Link to={`/pricing?highlight=${requiredTier}`} className="gap-1.5">
               Улучшить тариф <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
@@ -54,31 +64,52 @@ const CourseCard = ({ course }: { course: Course }) => {
     <Link
       to={`/course/${course.slug}`}
       className={`group block rounded-2xl border overflow-hidden card-hover ${
-        isPremiumCourse && hasAccess
+        isPremiumCourse
           ? "border-warning/30 bg-card premium-shadow"
           : "border-border bg-card"
       }`}
     >
       <div className={`aspect-video flex items-center justify-center relative ${
-        isPremiumCourse && hasAccess
+        isPremiumCourse
           ? "bg-gradient-to-br from-warning/15 to-warning/5"
-          : "bg-gradient-to-br from-primary/20 to-primary/5"
+          : isOptimalCourse
+            ? "bg-gradient-to-br from-accent/15 to-accent/5"
+            : "bg-gradient-to-br from-primary/20 to-primary/5"
       }`}>
         <BookOpen className={`h-12 w-12 transition-colors ${
-          isPremiumCourse && hasAccess
+          isPremiumCourse
             ? "text-warning/40 group-hover:text-warning/60"
             : "text-primary/40 group-hover:text-primary/60"
         }`} />
-        {isPremiumCourse && hasAccess && (
-          <Badge className="absolute top-3 right-3 bg-warning/10 text-warning gap-1">
-            <Crown className="h-3 w-3" /> Premium
+
+        {/* Status badges */}
+        <div className="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
+          {isPremiumCourse && (
+            <Badge className="bg-warning/10 text-warning gap-1">
+              <Crown className="h-3 w-3" /> Premium
+            </Badge>
+          )}
+          {isOptimalCourse && !isPremiumCourse && (
+            <Badge className="bg-accent/10 text-accent">Оптимальный</Badge>
+          )}
+          {isNew && (
+            <Badge className="bg-success/10 text-success gap-1">
+              <Sparkles className="h-3 w-3" /> Новое
+            </Badge>
+          )}
+          {isPopular && !isNew && (
+            <Badge className="bg-primary/10 text-primary gap-1">
+              <TrendingUp className="h-3 w-3" /> Популярное
+            </Badge>
+          )}
+        </div>
+
+        {/* Included badge */}
+        <div className="absolute top-3 left-3">
+          <Badge variant="secondary" className="text-[10px] gap-1 bg-background/80 backdrop-blur-sm">
+            Включено в тариф
           </Badge>
-        )}
-        {requiredTier === "optimal" && hasAccess && (
-          <Badge className="absolute top-3 right-3 bg-accent/10 text-accent">
-            Оптимальный
-          </Badge>
-        )}
+        </div>
       </div>
       <div className="p-5 space-y-3">
         <Badge variant="secondary" className="text-xs">
