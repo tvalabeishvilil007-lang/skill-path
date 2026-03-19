@@ -28,12 +28,12 @@ Deno.serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const publishableKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const authHeader = req.headers.get("Authorization");
 
-  if (!supabaseUrl || !publishableKey || !serviceRoleKey) {
-    return new Response(JSON.stringify({ error: "Backend secrets are missing" }), {
+  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+    return new Response(JSON.stringify({ error: "Backend secrets are missing", debug: { hasUrl: !!supabaseUrl, hasAnon: !!anonKey, hasService: !!serviceRoleKey } }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
