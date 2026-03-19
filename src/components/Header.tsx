@@ -9,39 +9,27 @@ import { ROLE_LABELS, useUserRole } from "@/hooks/useUserRole";
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { role } = useUserRole();
-
-  const publicLinks = [
-    { to: "/about", label: "О платформе" },
-    { to: "/#how-it-works", label: "Как это работает" },
-    { to: "/pricing", label: "Тарифы" },
-    { to: "/#faq", label: "FAQ" },
-  ];
-
-  const authLinks = [
-    { to: "/dashboard", label: "Кабинет" },
-    { to: "/catalog", label: "Каталог" },
-    { to: "/my-plan", label: "Мой тариф" },
-  ];
-
-  const links = user ? authLinks : publicLinks;
+  const { role, isAdmin } = useUserRole();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
       <div className="container flex h-16 items-center justify-between gap-4">
-        <Link to="/" className="flex items-center gap-2 font-bold text-xl shrink-0">
+        <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 font-bold text-xl shrink-0">
           <BookOpen className="h-6 w-6 text-primary" />
-          <span>EduPlatform</span>
+          <span>Закрытый клуб</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
-          {links.map((l) => (
-            <Link key={l.to} to={l.to} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              {l.label}
-            </Link>
-          ))}
+        <nav className="hidden md:flex items-center gap-4">
           {user ? (
-            <div className="flex items-center gap-3">
+            <>
+              <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                Кабинет
+              </Link>
+              {isAdmin && (
+                <Link to="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  Админка
+                </Link>
+              )}
               {role && (
                 <Badge variant="secondary" className="gap-1.5">
                   <ShieldCheck className="h-3.5 w-3.5" />
@@ -51,14 +39,14 @@ const Header = () => {
               <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5">
                 <LogOut className="h-4 w-4" /> Выйти
               </Button>
-            </div>
+            </>
           ) : (
             <>
               <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Войти
               </Link>
               <Button asChild size="sm">
-                <Link to="/pricing">Получить доступ</Link>
+                <Link to="/register">Зарегистрироваться</Link>
               </Button>
             </>
           )}
@@ -71,28 +59,33 @@ const Header = () => {
 
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background p-4 space-y-3">
-          {user && role && (
-            <Badge variant="secondary" className="gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              {ROLE_LABELS[role]}
-            </Badge>
-          )}
-          {links.map((l) => (
-            <Link key={l.to} to={l.to} className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
-              {l.label}
-            </Link>
-          ))}
           {user ? (
-            <Button variant="ghost" size="sm" onClick={() => { signOut(); setMobileOpen(false); }} className="w-full justify-start gap-1.5">
-              <LogOut className="h-4 w-4" /> Выйти
-            </Button>
+            <>
+              {role && (
+                <Badge variant="secondary" className="gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  {ROLE_LABELS[role]}
+                </Badge>
+              )}
+              <Link to="/dashboard" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
+                Кабинет
+              </Link>
+              {isAdmin && (
+                <Link to="/admin" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
+                  Админка
+                </Link>
+              )}
+              <Button variant="ghost" size="sm" onClick={() => { signOut(); setMobileOpen(false); }} className="w-full justify-start gap-1.5">
+                <LogOut className="h-4 w-4" /> Выйти
+              </Button>
+            </>
           ) : (
             <>
               <Link to="/login" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
                 Войти
               </Link>
               <Button asChild size="sm" className="w-full">
-                <Link to="/pricing" onClick={() => setMobileOpen(false)}>Получить доступ</Link>
+                <Link to="/register" onClick={() => setMobileOpen(false)}>Зарегистрироваться</Link>
               </Button>
             </>
           )}
