@@ -1,7 +1,5 @@
 import { Outlet, Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
 import {
   SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel,
   SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger,
@@ -9,9 +7,11 @@ import {
 import { NavLink } from "@/components/NavLink";
 import {
   LayoutDashboard, FolderOpen, BookOpen, Layers, Play, CreditCard,
-  Users, Receipt, Loader2, FileText, ArrowLeft,
+  Users, Receipt, Loader2, FileText, ArrowLeft, ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ROLE_LABELS, useUserRole } from "@/hooks/useUserRole";
 
 const navItems = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -27,20 +27,14 @@ const navItems = [
 
 const AdminLayout = () => {
   const { user, loading } = useAuth();
-
-  const { data: isAdmin, isLoading: roleLoading } = useQuery({
-    queryKey: ["admin-role", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase.rpc("has_role", { _user_id: user!.id, _role: "admin" });
-      return !!data;
-    },
-  });
+  const { isAdmin, isLoading: roleLoading, role, isAuthError } = useUserRole();
 
   if (loading || roleLoading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
-  if (!user || !isAdmin) return <Navigate to="/" replace />;
+
+  if (!user || isAuthError) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/access-denied" replace />;
 
   return (
     <SidebarProvider>
@@ -48,7 +42,7 @@ const AdminLayout = () => {
         <Sidebar>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel className="text-xs uppercase tracking-wider">CMS Платформы</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-xs uppercase tracking-wider">CMS платформы</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {navItems.map((item) => (
@@ -71,7 +65,12 @@ const AdminLayout = () => {
           <header className="h-14 border-b border-border flex items-center px-4 gap-3 shrink-0 bg-background">
             <SidebarTrigger />
             <span className="text-sm font-medium text-muted-foreground">Админ-панель</span>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-3">
+              <Badge variant="secondary" className="gap-1.5 hidden sm:inline-flex">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                {role ? ROLE_LABELS[role] : "Admin"}
+              </Badge>
+              <span className="hidden md:block text-xs text-muted-foreground">{user.email}</span>
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/" className="gap-1.5"><ArrowLeft className="h-3.5 w-3.5" /> На сайт</Link>
               </Button>
