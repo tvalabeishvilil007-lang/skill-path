@@ -1,43 +1,61 @@
 import { Link } from "react-router-dom";
-import { BookOpen } from "lucide-react";
+import { GraduationCap } from "lucide-react";
+
+const footerLinks = {
+  platform: [
+    { to: "/catalog", label: "Каталог курсов" },
+    { to: "/", label: "О платформе" },
+    { to: "/#faq", label: "FAQ" },
+  ],
+  support: [
+    { to: "/", label: "Помощь" },
+    { to: "/", label: "Контакты" },
+    { to: "/", label: "Telegram" },
+  ],
+  legal: [
+    { to: "/", label: "Пользовательское соглашение" },
+    { to: "/", label: "Политика конфиденциальности" },
+    { to: "/", label: "Оферта" },
+  ],
+};
 
 const Footer = () => (
-  <footer className="border-t border-border bg-secondary/50 py-12">
+  <footer className="border-t border-border bg-surface py-16">
     <div className="container">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
         <div>
-          <Link to="/" className="flex items-center gap-2 font-bold text-lg mb-3">
-            <BookOpen className="h-5 w-5 text-primary" />
+          <Link to="/" className="flex items-center gap-2.5 font-bold text-lg mb-4">
+            <div className="rounded-xl bg-primary/10 p-1.5">
+              <GraduationCap className="h-5 w-5 text-primary" />
+            </div>
             EduPlatform
           </Link>
-          <p className="text-sm text-muted-foreground">
-            Платформа онлайн-обучения с лучшими курсами от экспертов
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Премиальная платформа онлайн-обучения. Курсы от экспертов-практиков.
           </p>
         </div>
-        <div>
-          <h4 className="font-semibold mb-3 text-sm">Платформа</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/catalog" className="hover:text-foreground transition-colors">Каталог курсов</Link></li>
-            <li><Link to="/" className="hover:text-foreground transition-colors">О нас</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-semibold mb-3 text-sm">Поддержка</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/" className="hover:text-foreground transition-colors">FAQ</Link></li>
-            <li><Link to="/" className="hover:text-foreground transition-colors">Контакты</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-semibold mb-3 text-sm">Правовая информация</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/" className="hover:text-foreground transition-colors">Пользовательское соглашение</Link></li>
-            <li><Link to="/" className="hover:text-foreground transition-colors">Политика конфиденциальности</Link></li>
-          </ul>
-        </div>
+        {Object.entries({ "Платформа": footerLinks.platform, "Поддержка": footerLinks.support, "Правовая информация": footerLinks.legal }).map(([title, links]) => (
+          <div key={title}>
+            <h4 className="font-semibold mb-4 text-sm">{title}</h4>
+            <ul className="space-y-3">
+              {links.map((l) => (
+                <li key={l.label}>
+                  <Link to={l.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
-      <div className="border-t border-border mt-8 pt-6 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} EduPlatform. Все права защищены.
+      <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p className="text-sm text-muted-foreground">
+          © {new Date().getFullYear()} EduPlatform. Все права защищены.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Сделано с ❤️ для тех, кто учится
+        </p>
       </div>
     </div>
   </footer>
