@@ -3,8 +3,8 @@ import { GraduationCap } from "lucide-react";
 
 const footerLinks = {
   platform: [
-    { to: "/catalog", label: "Каталог курсов" },
-    { to: "/", label: "О платформе" },
+    { to: "/about", label: "О платформе" },
+    { to: "/pricing", label: "Тарифы" },
     { to: "/#faq", label: "FAQ" },
   ],
   support: [
@@ -31,7 +31,7 @@ const Footer = () => (
             EduPlatform
           </Link>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Премиальная платформа онлайн-обучения. Курсы от экспертов-практиков.
+            Закрытая образовательная платформа. Доступ к библиотеке материалов только для участников.
           </p>
         </div>
         {Object.entries({ "Платформа": footerLinks.platform, "Поддержка": footerLinks.support, "Правовая информация": footerLinks.legal }).map(([title, links]) => (
@@ -54,7 +54,7 @@ const Footer = () => (
           © {new Date().getFullYear()} EduPlatform. Все права защищены.
         </p>
         <p className="text-xs text-muted-foreground">
-          Сделано с ❤️ для тех, кто учится
+          Закрытая платформа для участников
         </p>
       </div>
     </div>

@@ -1,3 +1,5 @@
+import { useAuth } from "@/contexts/AuthContext";
+import AccessRestricted from "@/components/AccessRestricted";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CourseCard from "@/components/CourseCard";
@@ -9,16 +11,26 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Loader2 } from "lucide-react";
 
 const Catalog = () => {
+  const { user, loading } = useAuth();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("Все");
   const { data: dbCourses, isLoading } = useCourses();
   const { data: dbCategories } = useCategories();
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) return <AccessRestricted />;
+
   const categories = dbCategories
     ? ["Все", ...dbCategories.map((c) => c.name)]
     : mockCategories;
 
-  // Use DB courses if available, fallback to mock
   const courses = dbCourses && dbCourses.length > 0
     ? dbCourses.map((c) => ({
         id: c.id,
@@ -49,8 +61,8 @@ const Catalog = () => {
       <main className="flex-1">
         <section className="hero-gradient text-hero-foreground py-12">
           <div className="container space-y-4">
-            <h1 className="text-3xl md:text-4xl font-bold">Каталог курсов</h1>
-            <p className="text-hero-muted">Найдите курс, который подходит именно вам</p>
+            <h1 className="text-3xl md:text-4xl font-bold">Библиотека материалов</h1>
+            <p className="text-hero-muted">Все доступные программы и материалы внутри платформы</p>
           </div>
         </section>
 
@@ -58,7 +70,7 @@ const Catalog = () => {
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Поиск курсов..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+              <Input placeholder="Поиск материалов..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
             </div>
             <div className="flex gap-2 flex-wrap">
               {categories.map((cat) => (
@@ -79,7 +91,7 @@ const Catalog = () => {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : filtered.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12">Курсы не найдены</p>
+            <p className="text-center text-muted-foreground py-12">Материалы не найдены</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((course) => (

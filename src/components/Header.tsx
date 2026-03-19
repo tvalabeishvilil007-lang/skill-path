@@ -1,12 +1,26 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { BookOpen, User, Menu, X, LogOut } from "lucide-react";
+import { BookOpen, Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
+
+  const publicLinks = [
+    { to: "/about", label: "О платформе" },
+    { to: "/#how-it-works", label: "Как это работает" },
+    { to: "/pricing", label: "Тарифы" },
+    { to: "/#faq", label: "FAQ" },
+  ];
+
+  const authLinks = [
+    { to: "/dashboard", label: "Кабинет" },
+    { to: "/catalog", label: "Каталог" },
+  ];
+
+  const links = user ? authLinks : publicLinks;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
@@ -17,25 +31,22 @@ const Header = () => {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/catalog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Каталог
-          </Link>
+          {links.map((l) => (
+            <Link key={l.to} to={l.to} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              {l.label}
+            </Link>
+          ))}
           {user ? (
-            <>
-              <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                Кабинет
-              </Link>
-              <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5">
-                <LogOut className="h-4 w-4" /> Выйти
-              </Button>
-            </>
+            <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5">
+              <LogOut className="h-4 w-4" /> Выйти
+            </Button>
           ) : (
             <>
               <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Войти
               </Link>
               <Button asChild size="sm">
-                <Link to="/register">Регистрация</Link>
+                <Link to="/pricing">Получить доступ</Link>
               </Button>
             </>
           )}
@@ -48,25 +59,22 @@ const Header = () => {
 
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background p-4 space-y-3">
-          <Link to="/catalog" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
-            Каталог
-          </Link>
+          {links.map((l) => (
+            <Link key={l.to} to={l.to} className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
+              {l.label}
+            </Link>
+          ))}
           {user ? (
-            <>
-              <Link to="/dashboard" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
-                Кабинет
-              </Link>
-              <Button variant="ghost" size="sm" onClick={() => { signOut(); setMobileOpen(false); }} className="w-full justify-start gap-1.5">
-                <LogOut className="h-4 w-4" /> Выйти
-              </Button>
-            </>
+            <Button variant="ghost" size="sm" onClick={() => { signOut(); setMobileOpen(false); }} className="w-full justify-start gap-1.5">
+              <LogOut className="h-4 w-4" /> Выйти
+            </Button>
           ) : (
             <>
               <Link to="/login" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
                 Войти
               </Link>
               <Button asChild size="sm" className="w-full">
-                <Link to="/register" onClick={() => setMobileOpen(false)}>Регистрация</Link>
+                <Link to="/pricing" onClick={() => setMobileOpen(false)}>Получить доступ</Link>
               </Button>
             </>
           )}
