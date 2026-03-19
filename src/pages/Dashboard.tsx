@@ -11,7 +11,7 @@ import { TIER_CONFIG, TIER_FEATURES, canAccess } from "@/lib/tiers";
 import {
   User, BookOpen, Receipt, Play, Loader2, TrendingUp,
   Clock, Award, FolderOpen, ArrowRight, Sparkles, BarChart3,
-  Library, Settings, Crown, Lock, Zap, ChevronRight,
+  Library, Settings, Crown, Lock, Zap, ChevronRight, Star, Eye,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -67,16 +67,32 @@ const Dashboard = () => {
     canceled: { label: "Отменён", cls: "bg-muted text-muted-foreground" },
   };
 
-  // Locked recommendations (upsell)
-  const lockedRecommendations = tier.level !== "premium" ? [
-    { label: "Data Science модули", tier: "Оптимальный" },
-    { label: "Продвинутые программы", tier: "Оптимальный" },
-    { label: "Финансовая аналитика", tier: "Premium" },
-  ].filter((r) => {
-    if (tier.level === "basic") return true;
-    if (tier.level === "optimal") return r.tier === "Premium";
-    return false;
-  }) : [];
+  // Available content for tier
+  const availableCategories = [
+    { name: "Программирование", tier: "basic" as const },
+    { name: "Дизайн", tier: "basic" as const },
+    { name: "Маркетинг", tier: "basic" as const },
+    { name: "Data Science", tier: "optimal" as const },
+    { name: "Мобильная разработка", tier: "optimal" as const },
+    { name: "Финансы", tier: "premium" as const },
+  ];
+
+  const accessibleCategories = availableCategories.filter((c) => canAccess(tier.level, c.tier));
+  const lockedCategories = availableCategories.filter((c) => !canAccess(tier.level, c.tier));
+
+  // Upsell items
+  const upsellItems = tier.level !== "premium" ? [
+    { label: "Продвинутые модули и практика", description: "Углублённые программы для профессионалов" },
+    { label: "Скачиваемые шаблоны и материалы", description: "Рабочие файлы для реальных проектов" },
+    { label: "Приватное комьюнити", description: "Общение с другими участниками платформы" },
+  ] : [];
+
+  // New materials
+  const newMaterials = [
+    { title: "Новый модуль: Продуктовый дизайн", badge: "Новое", color: "success" },
+    { title: "Обновлённые уроки по аналитике", badge: "Обновлено", color: "primary" },
+    { title: "Практические задания: верстка", badge: "Практика", color: "accent" },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -102,6 +118,9 @@ const Dashboard = () => {
                   {isPremium && <Crown className="h-3 w-3 mr-1" />}
                   {tier.name}
                 </Badge>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/my-plan" className="gap-2"><Settings className="h-4 w-4" /> Мой тариф</Link>
+                </Button>
                 <Button variant="outline" size="sm" asChild>
                   <Link to="/catalog" className="gap-2"><Library className="h-4 w-4" /> Библиотека</Link>
                 </Button>
@@ -146,11 +165,11 @@ const Dashboard = () => {
                   </div>
                 ))}
               </div>
-              {tier.level !== "premium" && (
-                <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
-                  <Link to="/pricing"><ArrowRight className="h-3.5 w-3.5" /> Улучшить тариф</Link>
-                </Button>
-              )}
+              <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                <Link to="/my-plan">
+                  {tier.level !== "premium" ? <>Улучшить тариф <ArrowRight className="h-3.5 w-3.5" /></> : <>Управление доступом <ChevronRight className="h-3.5 w-3.5" /></>}
+                </Link>
+              </Button>
             </div>
 
             {/* Stats */}
@@ -170,6 +189,59 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {/* Available by tier */}
+          <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FolderOpen className="h-5 w-5 text-primary" />
+                <h2 className="font-semibold">Доступно по вашему тарифу</h2>
+              </div>
+              <Badge variant="secondary" className="text-xs">{accessibleCategories.length} из {availableCategories.length} категорий</Badge>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {accessibleCategories.map((c) => (
+                <div key={c.name} className="rounded-xl bg-surface border border-border p-4 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                    <BookOpen className="h-4 w-4 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{c.name}</p>
+                    <p className="text-[10px] text-success">Включено в тариф</p>
+                  </div>
+                </div>
+              ))}
+              {lockedCategories.map((c) => (
+                <div key={c.name} className="rounded-xl bg-surface border border-border p-4 flex items-center gap-3 opacity-60">
+                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{c.name}</p>
+                    <p className="text-[10px] text-muted-foreground">Тариф {TIER_CONFIG[c.tier].name}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* New materials */}
+          <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <Sparkles className="h-5 w-5 text-accent" />
+              <h2 className="font-semibold">Новые материалы для вас</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {newMaterials.map((m) => (
+                <div key={m.title} className="rounded-xl bg-surface border border-border p-4 space-y-2">
+                  <Badge variant={m.color === "success" ? "success" : m.color === "accent" ? "accent" : "default"} className="text-[10px]">
+                    {m.badge}
+                  </Badge>
+                  <p className="text-sm font-medium">{m.title}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Progress bar */}
           {totalLessons > 0 && (
             <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
@@ -184,23 +256,54 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Locked recommendations (upsell) */}
-          {lockedRecommendations.length > 0 && (
-            <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-              <h2 className="font-semibold">Откроется после улучшения тарифа</h2>
+          {/* Upsell: what opens after upgrade */}
+          {upsellItems.length > 0 && (
+            <div className="rounded-2xl border border-primary/15 bg-card p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <Star className="h-5 w-5 text-primary" />
+                <h2 className="font-semibold">Что откроется после апгрейда</h2>
+              </div>
               <div className="space-y-3">
-                {lockedRecommendations.map((r) => (
-                  <div key={r.label} className="flex items-center justify-between rounded-xl bg-surface border border-border px-4 py-3">
+                {upsellItems.map((item) => (
+                  <div key={item.label} className="flex items-center justify-between rounded-xl bg-surface border border-border px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Lock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{r.label}</span>
+                      <div>
+                        <p className="text-sm font-medium">{item.label}</p>
+                        <p className="text-xs text-muted-foreground">{item.description}</p>
+                      </div>
                     </div>
-                    <Badge variant="secondary" className="text-xs">{r.tier}</Badge>
+                    <Badge variant="secondary" className="text-xs shrink-0">Апгрейд</Badge>
                   </div>
                 ))}
               </div>
               <Button variant="outline" size="sm" asChild>
                 <Link to="/pricing" className="gap-1.5">Улучшить тариф <ChevronRight className="h-3.5 w-3.5" /></Link>
+              </Button>
+            </div>
+          )}
+
+          {/* Premium recommendations */}
+          {tier.level !== "premium" && (
+            <div className="rounded-2xl border border-warning/15 bg-card p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <Crown className="h-5 w-5 text-warning" />
+                <h2 className="font-semibold">Premium-рекомендации</h2>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                С Premium-доступом вы получите все категории без ограничений, бессрочный доступ и приватное комьюнити
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                {["Все 6 категорий", "50 материалов", "Бессрочно"].map((v) => (
+                  <div key={v} className="rounded-xl bg-warning/5 border border-warning/10 p-3 text-center">
+                    <p className="text-sm font-semibold text-warning">{v}</p>
+                  </div>
+                ))}
+              </div>
+              <Button variant="accent" size="sm" asChild>
+                <Link to="/pricing?highlight=premium" className="gap-1.5">
+                  <Crown className="h-3.5 w-3.5" /> Перейти на Premium
+                </Link>
               </Button>
             </div>
           )}
@@ -223,7 +326,7 @@ const Dashboard = () => {
                   </div>
                   <h3 className="font-semibold text-lg">Начните изучение</h3>
                   <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                    Перейдите в библиотеку материалов и начните обучение по доступным на вашем тарифе программам
+                    Перейдите в библиотеку и начните обучение по доступным на вашем тарифе программам
                   </p>
                   <Button asChild><Link to="/catalog" className="gap-2">Библиотека <ArrowRight className="h-4 w-4" /></Link></Button>
                 </div>
@@ -305,9 +408,7 @@ const Dashboard = () => {
                         {tier.expiresAt && <span className="text-xs text-muted-foreground">до {new Date(tier.expiresAt).toLocaleDateString("ru-RU")}</span>}
                       </div>
                     </div>
-                    {tier.level !== "premium" && (
-                      <Button variant="outline" size="sm" asChild><Link to="/pricing">Улучшить</Link></Button>
-                    )}
+                    <Button variant="outline" size="sm" asChild><Link to="/my-plan">Управление</Link></Button>
                   </div>
                   <div className="space-y-2"><Label>Имя</Label><Input value={profileName} onChange={(e) => setProfileName(e.target.value)} /></div>
                   <div className="space-y-2"><Label>Email</Label><Input value={profileEmail} disabled /></div>
