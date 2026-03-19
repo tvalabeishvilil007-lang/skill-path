@@ -446,6 +446,60 @@ export type Database = {
           },
         ]
       }
+      plans: {
+        Row: {
+          categories_open: number
+          created_at: string
+          description: string | null
+          excluded_features: Json
+          features: Json
+          id: string
+          is_active: boolean
+          is_recommended: boolean
+          materials_open: number
+          name: string
+          period_days: number | null
+          price: number
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          categories_open?: number
+          created_at?: string
+          description?: string | null
+          excluded_features?: Json
+          features?: Json
+          id?: string
+          is_active?: boolean
+          is_recommended?: boolean
+          materials_open?: number
+          name: string
+          period_days?: number | null
+          price?: number
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          categories_open?: number
+          created_at?: string
+          description?: string | null
+          excluded_features?: Json
+          features?: Json
+          id?: string
+          is_active?: boolean
+          is_recommended?: boolean
+          materials_open?: number
+          name?: string
+          period_days?: number | null
+          price?: number
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
