@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { BookOpen, User, Menu, X } from "lucide-react";
+import { BookOpen, User, Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
@@ -18,18 +20,28 @@ const Header = () => {
           <Link to="/catalog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Каталог
           </Link>
-          <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Войти
-          </Link>
-          <Button asChild size="sm">
-            <Link to="/register">Регистрация</Link>
-          </Button>
+          {user ? (
+            <>
+              <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                Кабинет
+              </Link>
+              <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5">
+                <LogOut className="h-4 w-4" /> Выйти
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                Войти
+              </Link>
+              <Button asChild size="sm">
+                <Link to="/register">Регистрация</Link>
+              </Button>
+            </>
+          )}
         </nav>
 
-        <button
-          className="md:hidden p-2"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
+        <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
@@ -39,12 +51,25 @@ const Header = () => {
           <Link to="/catalog" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
             Каталог
           </Link>
-          <Link to="/login" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
-            Войти
-          </Link>
-          <Button asChild size="sm" className="w-full">
-            <Link to="/register" onClick={() => setMobileOpen(false)}>Регистрация</Link>
-          </Button>
+          {user ? (
+            <>
+              <Link to="/dashboard" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
+                Кабинет
+              </Link>
+              <Button variant="ghost" size="sm" onClick={() => { signOut(); setMobileOpen(false); }} className="w-full justify-start gap-1.5">
+                <LogOut className="h-4 w-4" /> Выйти
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
+                Войти
+              </Link>
+              <Button asChild size="sm" className="w-full">
+                <Link to="/register" onClick={() => setMobileOpen(false)}>Регистрация</Link>
+              </Button>
+            </>
+          )}
         </div>
       )}
     </header>
