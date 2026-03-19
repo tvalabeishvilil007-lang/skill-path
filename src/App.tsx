@@ -18,6 +18,7 @@ import Dashboard from "./pages/Dashboard";
 import LessonPage from "./pages/LessonPage";
 import MyPlan from "./pages/MyPlan";
 import NotFound from "./pages/NotFound";
+import AccessDenied from "./pages/AccessDenied";
 
 // Admin
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/my-plan" element={<MyPlan />} />
               <Route path="/lesson/:courseSlug/:lessonSlug" element={<LessonPage />} />
+              <Route path="/access-denied" element={<AccessDenied />} />
 
               {/* Admin CMS */}
               <Route path="/admin" element={<AdminLayout />}>

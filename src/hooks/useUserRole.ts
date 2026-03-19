@@ -13,12 +13,19 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   user: "Member",
 };
 
+function isAuthErrorMessage(message?: string) {
+  if (!message) return false;
+  const normalized = message.toLowerCase();
+  return normalized.includes("jwt expired") || normalized.includes("jwt") || normalized.includes("401") || normalized.includes("not authenticated");
+}
+
 export function useUserRole() {
   const { user, loading: authLoading } = useAuth();
 
   const query = useQuery({
     queryKey: ["user-role", user?.id],
     enabled: !authLoading && !!user?.id,
+    retry: false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_roles")
@@ -37,11 +44,14 @@ export function useUserRole() {
     },
   });
 
+  const errorMessage = query.error instanceof Error ? query.error.message : undefined;
+
   return {
     role: query.data?.role ?? null,
     roles: query.data?.roles ?? [],
     isAdmin: query.data?.role === "admin",
     isLoading: authLoading || query.isLoading,
     error: query.error,
+    isAuthError: isAuthErrorMessage(errorMessage),
   };
 }
