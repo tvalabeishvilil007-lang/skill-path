@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { BookOpen, ShieldCheck, ArrowRight } from "lucide-react";
@@ -51,45 +52,54 @@ const Login = () => {
       <Header />
       <main className="flex-1 flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-sm space-y-6">
-          <div className="text-center space-y-2">
-            <BookOpen className="h-10 w-10 text-primary mx-auto" />
+          <div className="text-center space-y-3">
+            <div className="rounded-2xl bg-primary/10 w-14 h-14 flex items-center justify-center mx-auto">
+              <BookOpen className="h-7 w-7 text-primary" />
+            </div>
             <h1 className="text-2xl font-bold">Вход в аккаунт</h1>
-            <p className="text-sm text-muted-foreground">Введите данные для входа</p>
+            <p className="text-sm text-muted-foreground">Введите данные для входа в закрытый клуб</p>
           </div>
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
-              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </div>
-            <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? "Вход..." : "Войти"}
-            </Button>
-          </form>
+
+          <Card className="rounded-2xl">
+            <CardContent className="p-6">
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                  <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium">Пароль</Label>
+                  <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 rounded-xl" />
+                </div>
+                <Button className="w-full h-11 rounded-xl" type="submit" disabled={loading}>
+                  {loading ? "Вход..." : "Войти"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
           {isPreview && (
-            <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
-              <Badge variant="outline" className="gap-1.5">
-                <ShieldCheck className="h-3.5 w-3.5" /> Preview mode
-              </Badge>
-              <p className="text-sm text-muted-foreground">
-                Для тестирования CMS можно выдать текущему авторизованному аккаунту роль admin только в preview-режиме.
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full gap-2"
-                onClick={handlePreviewAdminAccess}
-                disabled={!user || grantingAdmin}
-              >
-                {grantingAdmin ? "Выдаём admin-доступ..." : "Войти как admin в preview"}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-              {!user && <p className="text-xs text-muted-foreground">Сначала войдите обычным аккаунтом, затем нажмите кнопку выше.</p>}
-            </div>
+            <Card className="rounded-2xl border-dashed">
+              <CardContent className="p-4 space-y-3">
+                <Badge variant="outline" className="gap-1.5 text-xs">
+                  <ShieldCheck className="h-3 w-3" /> Preview mode
+                </Badge>
+                <p className="text-sm text-muted-foreground">
+                  Для тестирования CMS можно выдать текущему аккаунту роль admin.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full gap-2 rounded-xl h-10"
+                  onClick={handlePreviewAdminAccess}
+                  disabled={!user || grantingAdmin}
+                >
+                  {grantingAdmin ? "Выдаём admin-доступ..." : "Войти как admin в preview"}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+                {!user && <p className="text-xs text-muted-foreground">Сначала войдите обычным аккаунтом.</p>}
+              </CardContent>
+            </Card>
           )}
 
           <p className="text-center text-sm text-muted-foreground">

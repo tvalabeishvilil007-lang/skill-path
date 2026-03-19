@@ -42,15 +42,17 @@ const AdminLayout = () => {
         <Sidebar>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel className="text-xs uppercase tracking-wider">CMS платформы</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/70 px-3 mb-1">
+                Управление
+              </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {navItems.map((item) => (
                     <SidebarMenuItem key={item.to}>
                       <SidebarMenuButton asChild>
-                        <NavLink to={item.to} end={item.end} className="hover:bg-muted/50" activeClassName="bg-primary/10 text-primary font-medium">
-                          <item.icon className="mr-2 h-4 w-4" />
-                          <span>{item.label}</span>
+                        <NavLink to={item.to} end={item.end} className="rounded-xl hover:bg-muted/50 transition-colors" activeClassName="bg-primary/10 text-primary font-medium">
+                          <item.icon className="mr-2.5 h-4 w-4" />
+                          <span className="text-sm">{item.label}</span>
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -62,17 +64,17 @@ const AdminLayout = () => {
         </Sidebar>
 
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 border-b border-border flex items-center px-4 gap-3 shrink-0 bg-background">
+          <header className="h-14 border-b border-border/60 flex items-center px-4 gap-3 shrink-0 bg-background/70 backdrop-blur-xl">
             <SidebarTrigger />
-            <span className="text-sm font-medium text-muted-foreground">Админ-панель</span>
+            <span className="text-sm font-semibold text-muted-foreground">Панель управления</span>
             <div className="ml-auto flex items-center gap-3">
-              <Badge variant="secondary" className="gap-1.5 hidden sm:inline-flex">
-                <ShieldCheck className="h-3.5 w-3.5" />
+              <Badge variant="secondary" className="gap-1.5 hidden sm:inline-flex text-xs">
+                <ShieldCheck className="h-3 w-3" />
                 {role ? ROLE_LABELS[role] : "Admin"}
               </Badge>
               <span className="hidden md:block text-xs text-muted-foreground">{user.email}</span>
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/" className="gap-1.5"><ArrowLeft className="h-3.5 w-3.5" /> На сайт</Link>
+                <Link to="/" className="gap-1.5 text-muted-foreground hover:text-foreground"><ArrowLeft className="h-3.5 w-3.5" /> На сайт</Link>
               </Button>
             </div>
           </header>
