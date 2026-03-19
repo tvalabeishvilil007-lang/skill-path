@@ -20,7 +20,7 @@ const navItems = [
   { to: "/admin/modules", label: "Модули", icon: Layers },
   { to: "/admin/lessons", label: "Уроки", icon: Play },
   { to: "/admin/materials", label: "Материалы", icon: FileText },
-  { to: "/admin/plans", label: "Тарифы", icon: CreditCard },
+  { to: "/admin/requests", label: "Заявки", icon: ClipboardList },
   { to: "/admin/users", label: "Пользователи", icon: Users },
   { to: "/admin/orders", label: "Заказы", icon: Receipt },
 ];

@@ -2,15 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "admin" | "moderator" | "content_manager" | "user";
+export type AppRole = "admin" | "moderator" | "content_manager" | "manager" | "user";
 
-const ROLE_PRIORITY: AppRole[] = ["admin", "content_manager", "moderator", "user"];
+const ROLE_PRIORITY: AppRole[] = ["admin", "content_manager", "manager", "moderator", "user"];
 
 export const ROLE_LABELS: Record<AppRole, string> = {
-  admin: "Admin",
-  content_manager: "Content manager",
-  moderator: "Moderator",
-  user: "Member",
+  admin: "Админ",
+  content_manager: "Контент-менеджер",
+  manager: "Менеджер",
+  moderator: "Модератор",
+  user: "Участник",
 };
 
 function isAuthErrorMessage(message?: string) {
