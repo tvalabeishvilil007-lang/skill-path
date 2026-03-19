@@ -1,22 +1,26 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CourseCard from "@/components/CourseCard";
-import ReviewCard from "@/components/ReviewCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { mockCourses } from "@/data/mockCourses";
+import ReviewCard from "@/components/ReviewCard";
 import { motion } from "framer-motion";
 import {
-  Play,
-  Award,
-  Clock,
-  Users,
-  Star,
+  Lock,
   Shield,
   Zap,
   Monitor,
   ArrowRight,
+  BookOpen,
+  PlayCircle,
+  BarChart3,
+  RefreshCw,
+  Layers,
+  Smartphone,
+  UserCheck,
+  KeyRound,
+  Eye,
+  Library,
 } from "lucide-react";
 import {
   Accordion,
@@ -35,123 +39,166 @@ const fadeUp = {
 };
 
 const features = [
-  { icon: Play, title: "HD Видеоуроки", desc: "Профессиональное видео с примерами из реальных проектов" },
-  { icon: Award, title: "Сертификация", desc: "Именной сертификат после успешного завершения курса" },
-  { icon: Clock, title: "Вечный доступ", desc: "Возвращайтесь к материалам в любое время без ограничений" },
-  { icon: Users, title: "Менторство", desc: "Поддержка преподавателей и закрытое комьюнити студентов" },
-  { icon: Shield, title: "Гарантия", desc: "Полный возврат средств в течение 14 дней после покупки" },
-  { icon: Zap, title: "Практика", desc: "Реальные проекты и задания для закрепления знаний" },
+  { icon: Lock, title: "Закрытый кабинет", desc: "Персональное пространство обучения с доступом только для участников" },
+  { icon: Library, title: "Единая библиотека", desc: "Все материалы собраны в структурированную систему внутри платформы" },
+  { icon: PlayCircle, title: "Удобный просмотр", desc: "Видеоуроки в HD-качестве с удобным плеером и навигацией" },
+  { icon: BarChart3, title: "Отслеживание прогресса", desc: "Визуальная статистика обучения и персональные достижения" },
+  { icon: RefreshCw, title: "Обновляемый контент", desc: "Библиотека регулярно дополняется новыми материалами" },
+  { icon: Smartphone, title: "Доступ с любого устройства", desc: "Учитесь с компьютера, планшета или телефона без ограничений" },
 ];
 
 const faqs = [
-  { q: "Как начать обучение?", a: "Зарегистрируйтесь, выберите курс и оплатите его. Доступ откроется моментально после оплаты." },
-  { q: "Можно ли вернуть деньги?", a: "Да, мы предоставляем возврат в течение 14 дней после покупки, если вы прошли менее 30% курса." },
-  { q: "Как долго длится доступ?", a: "Большинство курсов предоставляют бессрочный доступ. Для некоторых курсов срок указан на странице." },
-  { q: "Получу ли я сертификат?", a: "Да, после прохождения всех уроков курса вы получите именной сертификат." },
-  { q: "Можно ли учиться с телефона?", a: "Да, платформа полностью адаптирована для мобильных устройств." },
+  { q: "Как получить доступ к платформе?", a: "Оформите участие на странице тарифов, пройдите регистрацию — и доступ откроется моментально." },
+  { q: "Как работает подписка?", a: "Вы выбираете тариф с нужным сроком доступа. После оплаты все материалы доступны внутри вашего личного кабинета." },
+  { q: "Можно ли смотреть с телефона?", a: "Да, платформа полностью адаптирована для мобильных устройств и планшетов." },
+  { q: "Как долго действует доступ?", a: "Срок зависит от выбранного тарифа — от 1 месяца до бессрочного доступа." },
+  { q: "Как попасть внутрь платформы?", a: "После оформления доступа и регистрации вы сразу попадаете в закрытый личный кабинет с материалами." },
 ];
 
 const reviews = [
-  { name: "Анна К.", course: "Веб-разработка", text: "Отличный курс! Устроилась на работу через 2 месяца после завершения. Рекомендую всем, кто хочет сменить профессию.", rating: 5 },
-  { name: "Михаил Д.", course: "UX/UI Дизайн", text: "Очень структурированная подача материала. Преподаватель — практик из индустрии, это чувствуется.", rating: 5 },
-  { name: "Елена В.", course: "Python", text: "Преподаватель объясняет сложные вещи простым языком. За 3 месяца освоила Python с нуля!", rating: 4 },
+  { name: "Анна К.", course: "Участник платформы", text: "Наконец нашла место, где всё структурировано и понятно. Закрытый формат создаёт атмосферу серьёзного обучения.", rating: 5 },
+  { name: "Михаил Д.", course: "Участник платформы", text: "Удобный кабинет, качественные материалы. Ощущение, что ты в приватном клубе знаний — это мотивирует.", rating: 5 },
+  { name: "Елена В.", course: "Участник платформы", text: "Прогресс отслеживается автоматически, библиотека постоянно обновляется. Очень довольна качеством.", rating: 4 },
 ];
 
 const steps = [
-  { step: "01", title: "Регистрация", desc: "Создайте аккаунт за 30 секунд" },
-  { step: "02", title: "Выбор курса", desc: "Найдите курс по вашей теме" },
-  { step: "03", title: "Обучение", desc: "Смотрите уроки в удобном темпе" },
-  { step: "04", title: "Результат", desc: "Получите навыки и сертификат" },
+  { step: "01", title: "Оформляете доступ", desc: "Выберите подходящий тариф на странице доступа" },
+  { step: "02", title: "Регистрация", desc: "Создайте аккаунт за 30 секунд" },
+  { step: "03", title: "Закрытый кабинет", desc: "Получите доступ в персональное пространство" },
+  { step: "04", title: "Обучение", desc: "Изучайте материалы внутри платформы" },
+];
+
+const insideItems = [
+  { icon: PlayCircle, title: "Видеоуроки", desc: "Профессиональные уроки в HD-качестве" },
+  { icon: Layers, title: "Структурированные модули", desc: "Пошаговые программы обучения" },
+  { icon: BookOpen, title: "Практические материалы", desc: "Задания, шаблоны и рабочие файлы" },
+  { icon: RefreshCw, title: "Обновляемая библиотека", desc: "Новые материалы добавляются регулярно" },
+  { icon: Eye, title: "Подборки по темам", desc: "Каталог материалов по направлениям" },
+  { icon: BarChart3, title: "Прогресс и история", desc: "Личный кабинет с отслеживанием обучения" },
 ];
 
 const stats = [
-  { value: "50+", label: "курсов" },
-  { value: "10 000+", label: "студентов" },
+  { value: "50+", label: "материалов" },
+  { value: "1 000+", label: "участников" },
   { value: "4.8", label: "средний рейтинг" },
-  { value: "95%", label: "завершают курс" },
+  { value: "24/7", label: "доступ" },
 ];
 
 const Index = () => {
-  const featuredCourses = mockCourses.filter((c) => c.isFeatured);
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
 
       {/* Hero */}
       <section className="relative py-24 md:py-36 overflow-hidden">
-        {/* Background effects */}
         <div className="absolute inset-0 hero-gradient" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl" />
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-accent/5 blur-3xl" />
-        
+
         <div className="container relative">
-          <motion.div className="max-w-3xl space-y-8" initial="hidden" animate="visible">
-            <motion.div variants={fadeUp} custom={0}>
-              <Badge variant="outline" className="px-4 py-1.5 text-sm">
-                🚀 Новая платформа для обучения
-              </Badge>
-            </motion.div>
-            
-            <motion.h1
-              variants={fadeUp}
-              custom={1}
-              className="text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight"
-            >
-              Учитесь у лучших.{" "}
-              <span className="text-gradient">Растите быстрее.</span>
-            </motion.h1>
-            
-            <motion.p
-              variants={fadeUp}
-              custom={2}
-              className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed"
-            >
-              Онлайн-курсы от практикующих экспертов. Видеоуроки, практические задания и&nbsp;поддержка на&nbsp;каждом шаге вашего пути.
-            </motion.p>
-            
-            <motion.div variants={fadeUp} custom={3} className="flex gap-4 flex-wrap">
-              <Button variant="hero" size="xl" asChild>
-                <Link to="/catalog">Смотреть курсы <ArrowRight className="h-5 w-5" /></Link>
-              </Button>
-              <Button variant="hero-outline" size="xl" asChild>
-                <Link to="/register">Начать бесплатно</Link>
-              </Button>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div className="space-y-8" initial="hidden" animate="visible">
+              <motion.div variants={fadeUp} custom={0}>
+                <Badge variant="outline" className="px-4 py-1.5 text-sm">
+                  🔒 Закрытая образовательная платформа
+                </Badge>
+              </motion.div>
+
+              <motion.h1
+                variants={fadeUp}
+                custom={1}
+                className="text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight"
+              >
+                Приватный клуб{" "}
+                <span className="text-gradient">знаний.</span>
+              </motion.h1>
+
+              <motion.p
+                variants={fadeUp}
+                custom={2}
+                className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed"
+              >
+                Закрытая платформа с&nbsp;библиотекой обучающих материалов, персональным кабинетом и&nbsp;системой отслеживания прогресса. Доступ — только для участников.
+              </motion.p>
+
+              <motion.div variants={fadeUp} custom={3} className="flex gap-4 flex-wrap">
+                <Button variant="hero" size="xl" asChild>
+                  <Link to="/pricing">Получить доступ <ArrowRight className="h-5 w-5" /></Link>
+                </Button>
+                <Button variant="hero-outline" size="xl" asChild>
+                  <Link to="/login">Войти</Link>
+                </Button>
+              </motion.div>
+
+              <motion.div variants={fadeUp} custom={4} className="flex flex-wrap gap-8 pt-4">
+                {stats.map((s) => (
+                  <div key={s.label} className="space-y-1">
+                    <p className="text-2xl font-bold text-primary">{s.value}</p>
+                    <p className="text-sm text-muted-foreground">{s.label}</p>
+                  </div>
+                ))}
+              </motion.div>
             </motion.div>
 
-            {/* Stats */}
-            <motion.div variants={fadeUp} custom={4} className="flex flex-wrap gap-8 pt-4">
-              {stats.map((s) => (
-                <div key={s.label} className="space-y-1">
-                  <p className="text-2xl font-bold text-primary">{s.value}</p>
-                  <p className="text-sm text-muted-foreground">{s.label}</p>
+            {/* Abstract platform mockup */}
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="hidden lg:block"
+            >
+              <div className="relative rounded-2xl border border-border bg-card overflow-hidden premium-shadow">
+                <div className="p-1">
+                  <div className="flex items-center gap-1.5 px-3 py-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-warning/60" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-success/60" />
+                    <div className="ml-auto text-[10px] text-muted-foreground font-mono">platform.app</div>
+                  </div>
+                  <div className="bg-surface rounded-xl p-6 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <Lock className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <div className="h-3 w-32 rounded bg-foreground/10" />
+                        <div className="h-2 w-20 rounded bg-muted-foreground/10 mt-1.5" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="rounded-lg bg-card border border-border p-3 space-y-2">
+                          <div className="h-2 w-full rounded bg-primary/15" />
+                          <div className="h-2 w-3/4 rounded bg-muted-foreground/10" />
+                          <div className="h-1.5 w-full rounded-full bg-muted mt-2">
+                            <div className="h-1.5 rounded-full bg-primary/40" style={{ width: `${30 + i * 20}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex-1 rounded-lg bg-card border border-border p-3 space-y-2">
+                        <div className="h-16 rounded bg-primary/10 flex items-center justify-center">
+                          <PlayCircle className="h-6 w-6 text-primary/40" />
+                        </div>
+                        <div className="h-2 w-3/4 rounded bg-foreground/10" />
+                        <div className="h-2 w-1/2 rounded bg-muted-foreground/10" />
+                      </div>
+                      <div className="w-32 rounded-lg bg-card border border-border p-3 space-y-2">
+                        <div className="h-2 w-full rounded bg-foreground/10" />
+                        {[1, 2, 3, 4].map((i) => (
+                          <div key={i} className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary/30" />
+                            <div className="h-1.5 w-full rounded bg-muted-foreground/10" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Platform preview */}
-      <section className="py-16 md:py-24">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="relative rounded-2xl border border-border bg-card overflow-hidden premium-shadow"
-          >
-            <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-surface via-card to-muted">
-              <div className="text-center space-y-4">
-                <div className="mx-auto rounded-2xl bg-primary/10 p-6 w-fit">
-                  <Monitor className="h-12 w-12 text-primary" />
-                </div>
-                <p className="text-lg font-semibold">Превью платформы</p>
-                <p className="text-sm text-muted-foreground">Интерактивный интерфейс для комфортного обучения</p>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -160,9 +207,9 @@ const Index = () => {
         <div className="container">
           <div className="text-center mb-16 space-y-4">
             <Badge variant="outline">Возможности</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold">Почему выбирают нас</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">Что вы получаете</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Всё, что нужно для эффективного обучения, в одном месте
+              Закрытое пространство для обучения с полным набором инструментов
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -187,32 +234,12 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Popular Courses */}
-      <section className="py-16 md:py-24">
-        <div className="container">
-          <div className="flex items-end justify-between mb-10 gap-4">
-            <div className="space-y-2">
-              <Badge variant="outline">Курсы</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold">Популярные курсы</h2>
-            </div>
-            <Button variant="outline" asChild>
-              <Link to="/catalog">Все курсы <ArrowRight className="h-4 w-4" /></Link>
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredCourses.map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* How it works */}
-      <section className="py-16 md:py-24">
+      <section id="how-it-works" className="py-16 md:py-24">
         <div className="container">
           <div className="text-center mb-16 space-y-4">
             <Badge variant="outline">Процесс</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold">Как проходит обучение</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">Как получить доступ</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {steps.map((s, i) => (
@@ -239,12 +266,44 @@ const Index = () => {
         </div>
       </section>
 
+      {/* What's inside */}
+      <section className="py-16 md:py-24">
+        <div className="container">
+          <div className="text-center mb-16 space-y-4">
+            <Badge variant="outline">Платформа</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold">Что внутри платформы</h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Полноценная система обучения в закрытом кабинете
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {insideItems.map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                custom={i}
+                className="rounded-2xl border border-border bg-card p-6 space-y-4 card-hover"
+              >
+                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+                  <item.icon className="h-6 w-6 text-accent" />
+                </div>
+                <h3 className="font-semibold text-lg">{item.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section className="py-16 md:py-24">
         <div className="container">
           <div className="text-center mb-16 space-y-4">
             <Badge variant="outline">Отзывы</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold">Что говорят студенты</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">Что говорят участники</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {reviews.map((r, i) => (
@@ -289,13 +348,16 @@ const Index = () => {
       <section className="py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background" />
         <div className="container relative text-center space-y-8">
-          <h2 className="text-3xl md:text-5xl font-bold">Готовы начать обучение?</h2>
+          <h2 className="text-3xl md:text-5xl font-bold">Получите доступ к закрытой платформе</h2>
           <p className="text-muted-foreground max-w-lg mx-auto text-lg">
-            Присоединяйтесь к тысячам студентов, которые уже меняют свою карьеру
+            Присоединяйтесь к участникам, которые уже обучаются внутри приватного пространства
           </p>
           <div className="flex justify-center gap-4 flex-wrap">
             <Button variant="hero" size="xl" asChild>
-              <Link to="/register">Начать сейчас <ArrowRight className="h-5 w-5" /></Link>
+              <Link to="/pricing">Оформить участие <ArrowRight className="h-5 w-5" /></Link>
+            </Button>
+            <Button variant="hero-outline" size="xl" asChild>
+              <Link to="/login">Войти</Link>
             </Button>
           </div>
         </div>

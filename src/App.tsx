@@ -4,17 +4,19 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Index.tsx";
-import Catalog from "./pages/Catalog.tsx";
-import CoursePage from "./pages/CoursePage.tsx";
-import Login from "./pages/Login.tsx";
-import Register from "./pages/Register.tsx";
-import ForgotPassword from "./pages/ForgotPassword.tsx";
-import ResetPassword from "./pages/ResetPassword.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
-import LessonPage from "./pages/LessonPage.tsx";
-import AdminPanel from "./pages/AdminPanel.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import Index from "./pages/Index";
+import About from "./pages/About";
+import Pricing from "./pages/Pricing";
+import Catalog from "./pages/Catalog";
+import CoursePage from "./pages/CoursePage";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Dashboard from "./pages/Dashboard";
+import LessonPage from "./pages/LessonPage";
+import AdminPanel from "./pages/AdminPanel";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,8 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/course/:slug" element={<CoursePage />} />
             <Route path="/login" element={<Login />} />
