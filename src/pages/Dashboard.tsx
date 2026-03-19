@@ -1,11 +1,16 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate, Navigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Link, Navigate } from "react-router-dom";
 import { useUserCourses, useUserOrders, useCourseProgress } from "@/hooks/useCourses";
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
-import { User, BookOpen, Receipt, Play, Loader2 } from "lucide-react";
+import {
+  User, BookOpen, Receipt, Play, Loader2, TrendingUp,
+  Clock, Award, FolderOpen, ArrowRight, Sparkles, BarChart3,
+  Library, Settings,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,11 +59,14 @@ const Dashboard = () => {
     else toast.success("Профиль обновлён");
   };
 
-  const getProgress = (courseId: string) => {
-    return progressData?.find((p) => p.course_id === courseId);
-  };
-
+  const getProgress = (courseId: string) => progressData?.find((p) => p.course_id === courseId);
   const formatPrice = (n: number) => new Intl.NumberFormat("ru-RU").format(n) + " ₽";
+
+  const totalProgress = progressData && progressData.length > 0
+    ? Math.round(progressData.reduce((sum, p) => sum + p.progress_percent, 0) / progressData.length)
+    : 0;
+  const totalCompleted = progressData?.reduce((sum, p) => sum + p.completed_lessons, 0) || 0;
+  const totalLessons = progressData?.reduce((sum, p) => sum + p.total_lessons, 0) || 0;
 
   const statusLabels: Record<string, { label: string; cls: string }> = {
     paid: { label: "Оплачен", cls: "bg-success/10 text-success" },
@@ -70,108 +78,213 @@ const Dashboard = () => {
     canceled: { label: "Отменён", cls: "bg-muted text-muted-foreground" },
   };
 
+  const overviewStats = [
+    { label: "Общий прогресс", value: `${totalProgress}%`, icon: TrendingUp, color: "text-primary" },
+    { label: "Пройдено уроков", value: `${totalCompleted}/${totalLessons}`, icon: Award, color: "text-success" },
+    { label: "Активных программ", value: `${accessRights?.length || 0}`, icon: FolderOpen, color: "text-accent" },
+    { label: "Покупок", value: `${orders?.length || 0}`, icon: Receipt, color: "text-warning" },
+  ];
+
+  const categories = [
+    { icon: BookOpen, label: "Все материалы", count: accessRights?.length || 0 },
+    { icon: Play, label: "Видеоуроки", count: totalLessons },
+    { icon: FolderOpen, label: "Модули", count: progressData?.length || 0 },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 container py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Личный кабинет</h1>
-          <p className="text-muted-foreground">Добро пожаловать, {profileName || "Студент"}!</p>
-        </div>
-
-        <Tabs defaultValue="courses">
-          <TabsList className="mb-6">
-            <TabsTrigger value="courses" className="gap-2"><BookOpen className="h-4 w-4" /> Мои курсы</TabsTrigger>
-            <TabsTrigger value="purchases" className="gap-2"><Receipt className="h-4 w-4" /> Покупки</TabsTrigger>
-            <TabsTrigger value="profile" className="gap-2"><User className="h-4 w-4" /> Профиль</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="courses">
-            {coursesLoading ? (
-              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-            ) : !accessRights || accessRights.length === 0 ? (
-              <div className="text-center py-12 space-y-4">
-                <p className="text-muted-foreground">У вас пока нет курсов</p>
-                <Button asChild><Link to="/catalog">Перейти в каталог</Link></Button>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {accessRights.map((ar) => {
-                  const course = ar.courses as any;
-                  const progress = getProgress(ar.course_id);
-                  return (
-                    <div key={ar.id} className="flex flex-col sm:flex-row items-start gap-4 border border-border rounded-lg bg-card p-5">
-                      <div className="w-full sm:w-40 aspect-video rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                        <BookOpen className="h-8 w-8 text-primary/40" />
-                      </div>
-                      <div className="flex-1 space-y-2 min-w-0">
-                        <h3 className="font-semibold">{course?.title}</h3>
-                        <Progress value={progress?.progress_percent || 0} className="h-2" />
-                        <p className="text-xs text-muted-foreground">
-                          Прогресс: {progress?.progress_percent || 0}%
-                          {progress ? ` (${progress.completed_lessons}/${progress.total_lessons} уроков)` : ""}
-                        </p>
-                      </div>
-                      <Button variant="outline" size="sm" className="shrink-0 gap-1.5" asChild>
-                        <Link to={`/course/${course?.slug}`}><Play className="h-3.5 w-3.5" /> Продолжить</Link>
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="purchases">
-            {!orders || orders.length === 0 ? (
-              <p className="text-center text-muted-foreground py-12">Нет покупок</p>
-            ) : (
-              <div className="border border-border rounded-lg overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th className="text-left p-3 font-medium">Курс</th>
-                      <th className="text-left p-3 font-medium hidden sm:table-cell">Дата</th>
-                      <th className="text-left p-3 font-medium">Сумма</th>
-                      <th className="text-left p-3 font-medium">Статус</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((o) => {
-                      const s = statusLabels[o.payment_status] || { label: o.payment_status, cls: "" };
-                      return (
-                        <tr key={o.id} className="border-t border-border">
-                          <td className="p-3">{(o.courses as any)?.title}</td>
-                          <td className="p-3 hidden sm:table-cell text-muted-foreground">
-                            {new Date(o.created_at).toLocaleDateString("ru-RU")}
-                          </td>
-                          <td className="p-3">{formatPrice(Number(o.amount))}</td>
-                          <td className="p-3">
-                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${s.cls}`}>{s.label}</span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="profile">
-            <div className="max-w-md space-y-4">
+      <main className="flex-1">
+        {/* Welcome */}
+        <section className="hero-gradient py-10 md:py-14">
+          <div className="container">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="space-y-2">
-                <Label>Имя</Label>
-                <Input value={profileName} onChange={(e) => setProfileName(e.target.value)} />
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold">
+                      Добро пожаловать{profileName ? `, ${profileName}` : ""}!
+                    </h1>
+                    <p className="text-muted-foreground text-sm">Ваше приватное пространство обучения</p>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input value={profileEmail} disabled />
-              </div>
-              <Button onClick={handleSaveProfile}>Сохранить</Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/catalog" className="gap-2">
+                  <Library className="h-4 w-4" /> Библиотека материалов
+                </Link>
+              </Button>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </section>
+
+        <div className="container py-8 space-y-8">
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {overviewStats.map((s) => (
+              <div key={s.label} className="rounded-2xl border border-border bg-card p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <s.icon className={`h-5 w-5 ${s.color}`} />
+                </div>
+                <p className="text-2xl font-bold">{s.value}</p>
+                <p className="text-xs text-muted-foreground">{s.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Overall progress */}
+          {totalLessons > 0 && (
+            <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <h2 className="font-semibold">Общий прогресс обучения</h2>
+                </div>
+                <span className="text-sm font-bold text-primary">{totalProgress}%</span>
+              </div>
+              <Progress value={totalProgress} className="h-3" />
+              <p className="text-xs text-muted-foreground">
+                Пройдено {totalCompleted} из {totalLessons} уроков
+              </p>
+            </div>
+          )}
+
+          {/* Categories quick access */}
+          <div>
+            <h2 className="font-semibold mb-4">Быстрый доступ</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {categories.map((c) => (
+                <Link
+                  key={c.label}
+                  to="/catalog"
+                  className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4 card-hover"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <c.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{c.label}</p>
+                    <p className="text-xs text-muted-foreground">{c.count} элементов</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <Tabs defaultValue="courses">
+            <TabsList className="mb-6">
+              <TabsTrigger value="courses" className="gap-2"><BookOpen className="h-4 w-4" /> Мои материалы</TabsTrigger>
+              <TabsTrigger value="purchases" className="gap-2"><Receipt className="h-4 w-4" /> Покупки</TabsTrigger>
+              <TabsTrigger value="profile" className="gap-2"><Settings className="h-4 w-4" /> Профиль</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="courses">
+              {coursesLoading ? (
+                <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+              ) : !accessRights || accessRights.length === 0 ? (
+                <div className="rounded-2xl border border-border bg-card p-12 text-center space-y-4">
+                  <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <Library className="h-7 w-7 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-lg">Ваша библиотека пуста</h3>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                    Оформите доступ к платформе, чтобы открыть библиотеку материалов, видеоуроков и практических заданий
+                  </p>
+                  <Button asChild>
+                    <Link to="/pricing" className="gap-2">Получить доступ <ArrowRight className="h-4 w-4" /></Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {accessRights.map((ar) => {
+                    const course = ar.courses as any;
+                    const progress = getProgress(ar.course_id);
+                    return (
+                      <div key={ar.id} className="flex flex-col sm:flex-row items-start gap-4 border border-border rounded-2xl bg-card p-5 card-hover">
+                        <div className="w-full sm:w-40 aspect-video rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                          <BookOpen className="h-8 w-8 text-primary/40" />
+                        </div>
+                        <div className="flex-1 space-y-3 min-w-0">
+                          <h3 className="font-semibold">{course?.title}</h3>
+                          <Progress value={progress?.progress_percent || 0} className="h-2" />
+                          <p className="text-xs text-muted-foreground">
+                            Прогресс: {progress?.progress_percent || 0}%
+                            {progress ? ` • ${progress.completed_lessons}/${progress.total_lessons} уроков` : ""}
+                          </p>
+                        </div>
+                        <Button variant="outline" size="sm" className="shrink-0 gap-1.5" asChild>
+                          <Link to={`/course/${course?.slug}`}><Play className="h-3.5 w-3.5" /> Продолжить</Link>
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="purchases">
+              {!orders || orders.length === 0 ? (
+                <div className="rounded-2xl border border-border bg-card p-12 text-center space-y-4">
+                  <div className="mx-auto w-14 h-14 rounded-2xl bg-warning/10 flex items-center justify-center">
+                    <Receipt className="h-7 w-7 text-warning" />
+                  </div>
+                  <h3 className="font-semibold text-lg">Нет покупок</h3>
+                  <p className="text-sm text-muted-foreground">История ваших покупок будет отображаться здесь</p>
+                </div>
+              ) : (
+                <div className="border border-border rounded-2xl overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-surface">
+                      <tr>
+                        <th className="text-left p-4 font-medium">Программа</th>
+                        <th className="text-left p-4 font-medium hidden sm:table-cell">Дата</th>
+                        <th className="text-left p-4 font-medium">Сумма</th>
+                        <th className="text-left p-4 font-medium">Статус</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map((o) => {
+                        const s = statusLabels[o.payment_status] || { label: o.payment_status, cls: "" };
+                        return (
+                          <tr key={o.id} className="border-t border-border">
+                            <td className="p-4">{(o.courses as any)?.title}</td>
+                            <td className="p-4 hidden sm:table-cell text-muted-foreground">
+                              {new Date(o.created_at).toLocaleDateString("ru-RU")}
+                            </td>
+                            <td className="p-4">{formatPrice(Number(o.amount))}</td>
+                            <td className="p-4">
+                              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${s.cls}`}>{s.label}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="profile">
+              <div className="rounded-2xl border border-border bg-card p-6">
+                <div className="max-w-md space-y-4">
+                  <h3 className="font-semibold mb-4">Настройки профиля</h3>
+                  <div className="space-y-2">
+                    <Label>Имя</Label>
+                    <Input value={profileName} onChange={(e) => setProfileName(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input value={profileEmail} disabled />
+                  </div>
+                  <Button onClick={handleSaveProfile}>Сохранить</Button>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
       <Footer />
     </div>
