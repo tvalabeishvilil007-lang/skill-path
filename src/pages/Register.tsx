@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { BookOpen } from "lucide-react";
@@ -39,28 +40,36 @@ const Register = () => {
       <Header />
       <main className="flex-1 flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-sm space-y-6">
-          <div className="text-center space-y-2">
-            <BookOpen className="h-10 w-10 text-primary mx-auto" />
+          <div className="text-center space-y-3">
+            <div className="rounded-2xl bg-primary/10 w-14 h-14 flex items-center justify-center mx-auto">
+              <BookOpen className="h-7 w-7 text-primary" />
+            </div>
             <h1 className="text-2xl font-bold">Регистрация</h1>
-            <p className="text-sm text-muted-foreground">Создайте аккаунт для доступа к курсам</p>
+            <p className="text-sm text-muted-foreground">Создайте аккаунт для доступа к закрытому клубу</p>
           </div>
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <Label htmlFor="name">Имя</Label>
-              <Input id="name" placeholder="Ваше имя" value={name} onChange={(e) => setName(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
-              <Input id="password" type="password" placeholder="Минимум 6 символов" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </div>
-            <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? "Создание..." : "Создать аккаунт"}
-            </Button>
-          </form>
+
+          <Card className="rounded-2xl">
+            <CardContent className="p-6">
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-medium">Имя</Label>
+                  <Input id="name" placeholder="Ваше имя" value={name} onChange={(e) => setName(e.target.value)} required className="h-11 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                  <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium">Пароль</Label>
+                  <Input id="password" type="password" placeholder="Минимум 6 символов" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 rounded-xl" />
+                </div>
+                <Button className="w-full h-11 rounded-xl" type="submit" disabled={loading}>
+                  {loading ? "Создание..." : "Создать аккаунт"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
           <p className="text-center text-sm text-muted-foreground">
             Уже есть аккаунт?{" "}
             <Link to="/login" className="text-primary hover:underline font-medium">Войти</Link>

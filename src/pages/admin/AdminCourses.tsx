@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
 
@@ -83,78 +84,84 @@ const AdminCourses = () => {
   };
 
   const filtered = data?.filter((c) => c.title.toLowerCase().includes(search.toLowerCase())) || [];
-  const statusCls: Record<string, string> = { published: "bg-success/10 text-success", draft: "bg-muted text-muted-foreground", hidden: "bg-warning/10 text-warning" };
+  const statusCls: Record<string, string> = {
+    published: "bg-success/10 text-success border-success/20",
+    draft: "bg-muted text-muted-foreground border-border",
+    hidden: "bg-warning/10 text-warning border-warning/20",
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Курсы / Программы</h1>
-        <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> Добавить</Button>
+        <h1 className="text-2xl font-bold">Курсы</h1>
+        <Button onClick={openCreate} className="gap-2 rounded-xl"><Plus className="h-4 w-4" /> Добавить</Button>
       </div>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        <Input placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
       </div>
 
       {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" /> : (
-        <div className="rounded-xl border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-surface">
-              <tr>
-                <th className="text-left p-3 font-medium">Название</th>
-                <th className="text-left p-3 font-medium hidden md:table-cell">Категория</th>
-                <th className="text-left p-3 font-medium">Цена</th>
-                <th className="text-left p-3 font-medium">Статус</th>
-                <th className="text-right p-3 font-medium">Действия</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c) => (
-                <tr key={c.id} className="border-t border-border hover:bg-muted/30">
-                  <td className="p-3">
-                    <p className="font-medium">{c.title}</p>
-                    <p className="text-xs text-muted-foreground font-mono">{c.slug}</p>
-                  </td>
-                  <td className="p-3 hidden md:table-cell text-muted-foreground">{(c.categories as any)?.name || "—"}</td>
-                  <td className="p-3">{new Intl.NumberFormat("ru-RU").format(Number(c.price))} ₽</td>
-                  <td className="p-3"><Badge className={statusCls[c.status] || ""}>{c.status}</Badge></td>
-                  <td className="p-3 text-right space-x-1">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(c)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                  </td>
+        <Card className="rounded-2xl overflow-hidden">
+          <CardContent className="p-0">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Название</th>
+                  <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider hidden md:table-cell">Категория</th>
+                  <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Цена</th>
+                  <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Статус</th>
+                  <th className="text-right p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Действия</th>
                 </tr>
-              ))}
-              {filtered.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">Нет данных</td></tr>}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.map((c) => (
+                  <tr key={c.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                    <td className="p-4">
+                      <p className="font-medium">{c.title}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{c.slug}</p>
+                    </td>
+                    <td className="p-4 hidden md:table-cell text-muted-foreground">{(c.categories as any)?.name || "—"}</td>
+                    <td className="p-4 font-semibold">{new Intl.NumberFormat("ru-RU").format(Number(c.price))} ₽</td>
+                    <td className="p-4"><Badge className={`${statusCls[c.status] || ""} border text-xs`}>{c.status}</Badge></td>
+                    <td className="p-4 text-right space-x-1">
+                      <Button variant="ghost" size="sm" className="rounded-lg" onClick={() => openEdit(c)}><Pencil className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" className="rounded-lg" onClick={() => handleDelete(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Нет данных</td></tr>}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editItem ? "Редактировать курс" : "Новый курс"}</DialogTitle>
+            <DialogTitle className="text-xl">{editItem ? "Редактировать курс" : "Новый курс"}</DialogTitle>
             <DialogDescription>Заполните данные курса</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Название</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Slug</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
-            <div className="space-y-2 md:col-span-2"><Label>Краткое описание</Label><Textarea value={form.short_description} onChange={(e) => setForm({ ...form, short_description: e.target.value })} rows={2} /></div>
-            <div className="space-y-2 md:col-span-2"><Label>Полное описание</Label><Textarea value={form.full_description} onChange={(e) => setForm({ ...form, full_description: e.target.value })} rows={4} /></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+            <div className="space-y-2"><Label className="text-sm font-medium">Название</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="h-10 rounded-xl" /></div>
+            <div className="space-y-2"><Label className="text-sm font-medium">Slug</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="h-10 rounded-xl" /></div>
+            <div className="space-y-2 md:col-span-2"><Label className="text-sm font-medium">Краткое описание</Label><Textarea value={form.short_description} onChange={(e) => setForm({ ...form, short_description: e.target.value })} rows={2} className="rounded-xl" /></div>
+            <div className="space-y-2 md:col-span-2"><Label className="text-sm font-medium">Полное описание</Label><Textarea value={form.full_description} onChange={(e) => setForm({ ...form, full_description: e.target.value })} rows={4} className="rounded-xl" /></div>
             <div className="space-y-2">
-              <Label>Категория</Label>
+              <Label className="text-sm font-medium">Категория</Label>
               <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Выберите" /></SelectTrigger>
+                <SelectTrigger className="h-10 rounded-xl"><SelectValue placeholder="Выберите" /></SelectTrigger>
                 <SelectContent>
                   {categories?.map((cat) => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Статус</Label>
+              <Label className="text-sm font-medium">Статус</Label>
               <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">Черновик</SelectItem>
                   <SelectItem value="published">Опубликован</SelectItem>
@@ -162,15 +169,15 @@ const AdminCourses = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2"><Label>Цена (₽)</Label><Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} /></div>
-            <div className="space-y-2"><Label>Старая цена</Label><Input type="number" value={form.old_price || ""} onChange={(e) => setForm({ ...form, old_price: e.target.value ? Number(e.target.value) : null })} /></div>
-            <div className="space-y-2"><Label>Уровень</Label><Input value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })} placeholder="Начинающий / Средний" /></div>
-            <div className="space-y-2"><Label>Длительность</Label><Input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="12 часов" /></div>
-            <div className="space-y-2"><Label>Автор</Label><Input value={form.author_name} onChange={(e) => setForm({ ...form, author_name: e.target.value })} /></div>
+            <div className="space-y-2"><Label className="text-sm font-medium">Цена (₽)</Label><Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} className="h-10 rounded-xl" /></div>
+            <div className="space-y-2"><Label className="text-sm font-medium">Старая цена</Label><Input type="number" value={form.old_price || ""} onChange={(e) => setForm({ ...form, old_price: e.target.value ? Number(e.target.value) : null })} className="h-10 rounded-xl" /></div>
+            <div className="space-y-2"><Label className="text-sm font-medium">Уровень</Label><Input value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })} placeholder="Начинающий / Средний" className="h-10 rounded-xl" /></div>
+            <div className="space-y-2"><Label className="text-sm font-medium">Длительность</Label><Input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="12 часов" className="h-10 rounded-xl" /></div>
+            <div className="space-y-2"><Label className="text-sm font-medium">Автор</Label><Input value={form.author_name} onChange={(e) => setForm({ ...form, author_name: e.target.value })} className="h-10 rounded-xl" /></div>
             <div className="space-y-2">
-              <Label>Тип доступа</Label>
+              <Label className="text-sm font-medium">Тип доступа</Label>
               <Select value={form.access_type} onValueChange={(v) => setForm({ ...form, access_type: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="forever">Бессрочный</SelectItem>
                   <SelectItem value="limited">Ограниченный</SelectItem>
@@ -179,10 +186,10 @@ const AdminCourses = () => {
             </div>
             <div className="flex items-center gap-2 md:col-span-2">
               <input type="checkbox" id="featured" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="rounded" />
-              <Label htmlFor="featured">Рекомендуемый</Label>
+              <Label htmlFor="featured" className="text-sm">Рекомендуемый</Label>
             </div>
           </div>
-          <Button onClick={handleSave} className="w-full mt-4">Сохранить</Button>
+          <Button onClick={handleSave} className="w-full mt-4 h-10 rounded-xl">Сохранить</Button>
         </DialogContent>
       </Dialog>
     </div>
