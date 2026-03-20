@@ -88,11 +88,10 @@ const Dashboard = () => {
                   }
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  <Button size="lg" className="rounded-xl gap-2 shadow-lg shadow-primary/20" asChild>
-                    <a href="#" onClick={(e) => { e.preventDefault(); document.querySelector<HTMLButtonElement>('[data-value="shop"]')?.click(); }}>
+                  <Button size="lg" className="rounded-xl gap-2 shadow-lg shadow-primary/20" onClick={goToShop}>
                       <ShoppingBag className="h-4 w-4" />
                       Перейти в магазин курсов
-                    </a>
+                  </Button>
                   </Button>
                   {myCourses.length > 0 && (
                     <Button variant="outline" size="lg" className="rounded-xl gap-2" asChild>
