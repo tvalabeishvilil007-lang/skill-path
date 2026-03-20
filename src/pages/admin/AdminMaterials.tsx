@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Loader2, Upload, FileText, X } from "lucide-react";
+import { uploadFile } from "@/lib/storage";
 
 const empty = { lesson_id: "", title: "", file_url: "", file_type: "pdf", sort_order: 0 };
 const fileTypes = [
@@ -25,6 +26,9 @@ const AdminMaterials = () => {
   const [editItem, setEditItem] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(empty);
+  const [materialFile, setMaterialFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: lessons } = useQuery({
     queryKey: ["admin-lessons-list"],
@@ -44,19 +48,38 @@ const AdminMaterials = () => {
   });
 
   const handleSave = async () => {
-    if (!form.title || !form.lesson_id || !form.file_url) { toast.error("Заполните обязательные поля"); return; }
-    const payload = { lesson_id: form.lesson_id, title: form.title, file_url: form.file_url, file_type: form.file_type, sort_order: form.sort_order };
-    if (editItem) {
-      const { error } = await supabase.from("lesson_materials").update(payload).eq("id", editItem.id);
-      if (error) { toast.error(error.message); return; }
-      toast.success("Материал обновлён");
-    } else {
-      const { error } = await supabase.from("lesson_materials").insert(payload);
-      if (error) { toast.error(error.message); return; }
-      toast.success("Материал создан");
+    if (!form.title || !form.lesson_id) { toast.error("Введите название и выберите урок"); return; }
+    if (!materialFile && !form.file_url) { toast.error("Загрузите файл или укажите ссылку"); return; }
+    
+    setUploading(true);
+    try {
+      let fileUrl = form.file_url;
+      
+      if (materialFile) {
+        const path = `materials/${Date.now()}-${materialFile.name}`;
+        fileUrl = await uploadFile('course-materials', materialFile, path);
+        // Auto-detect file type
+        const ext = materialFile.name.split('.').pop()?.toLowerCase();
+        if (ext === 'pdf') setForm(f => ({ ...f, file_type: 'pdf' }));
+      }
+
+      const payload = { lesson_id: form.lesson_id, title: form.title, file_url: fileUrl, file_type: form.file_type, sort_order: form.sort_order };
+      
+      if (editItem) {
+        const { error } = await supabase.from("lesson_materials").update(payload).eq("id", editItem.id);
+        if (error) { toast.error(error.message); return; }
+        toast.success("Материал обновлён");
+      } else {
+        const { error } = await supabase.from("lesson_materials").insert(payload);
+        if (error) { toast.error(error.message); return; }
+        toast.success("Материал создан");
+      }
+      qc.invalidateQueries({ queryKey: ["admin-materials"] });
+      setOpen(false);
+      setMaterialFile(null);
+    } finally {
+      setUploading(false);
     }
-    qc.invalidateQueries({ queryKey: ["admin-materials"] });
-    setOpen(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -67,10 +90,11 @@ const AdminMaterials = () => {
     qc.invalidateQueries({ queryKey: ["admin-materials"] });
   };
 
-  const openCreate = () => { setEditItem(null); setForm(empty); setOpen(true); };
+  const openCreate = () => { setEditItem(null); setForm(empty); setMaterialFile(null); setOpen(true); };
   const openEdit = (item: any) => {
     setEditItem(item);
     setForm({ lesson_id: item.lesson_id, title: item.title, file_url: item.file_url, file_type: item.file_type || "pdf", sort_order: item.sort_order });
+    setMaterialFile(null);
     setOpen(true);
   };
 
@@ -121,7 +145,7 @@ const AdminMaterials = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editItem ? "Редактировать материал" : "Новый материал"}</DialogTitle>
-            <DialogDescription>Прикрепите материал к уроку</DialogDescription>
+            <DialogDescription>Загрузите файл или укажите ссылку</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -131,8 +155,43 @@ const AdminMaterials = () => {
                 <SelectContent>{lessons?.map((l) => <SelectItem key={l.id} value={l.id}>{(l.modules as any)?.title} → {l.title}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="space-y-2"><Label>Название</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-            <div className="space-y-2"><Label>URL файла / ссылка</Label><Input value={form.file_url} onChange={(e) => setForm({ ...form, file_url: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Название</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Например: Рабочая тетрадь" /></div>
+            
+            {/* File upload */}
+            <div className="space-y-2">
+              <Label>Файл</Label>
+              <input ref={fileRef} type="file" className="hidden"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.txt,.jpg,.jpeg,.png,.webp"
+                onChange={(e) => { 
+                  const f = e.target.files?.[0]; 
+                  if (f) { 
+                    setMaterialFile(f); 
+                    if (!form.title) setForm(prev => ({ ...prev, title: f.name.replace(/\.[^.]+$/, '') }));
+                  } 
+                }} />
+              
+              {materialFile ? (
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl border border-border">
+                  <FileText className="h-5 w-5 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{materialFile.name}</p>
+                    <p className="text-xs text-muted-foreground">{(materialFile.size / 1024 / 1024).toFixed(1)} МБ</p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setMaterialFile(null)}><X className="h-3.5 w-3.5" /></Button>
+                </div>
+              ) : (
+                <button onClick={() => fileRef.current?.click()}
+                  className="w-full h-20 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors">
+                  <Upload className="h-5 w-5" />
+                  <span className="text-sm">Загрузить файл</span>
+                </button>
+              )}
+            </div>
+            
+            {!materialFile && (
+              <div className="space-y-2"><Label>Или укажите ссылку</Label><Input value={form.file_url} onChange={(e) => setForm({ ...form, file_url: e.target.value })} placeholder="https://..." /></div>
+            )}
+            
             <div className="space-y-2">
               <Label>Тип</Label>
               <Select value={form.file_type} onValueChange={(v) => setForm({ ...form, file_type: v })}>
@@ -141,7 +200,9 @@ const AdminMaterials = () => {
               </Select>
             </div>
             <div className="space-y-2"><Label>Порядок</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} /></div>
-            <Button onClick={handleSave} className="w-full">Сохранить</Button>
+            <Button onClick={handleSave} disabled={uploading} className="w-full">
+              {uploading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Загрузка...</> : "Сохранить"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
