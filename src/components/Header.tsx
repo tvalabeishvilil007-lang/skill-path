@@ -39,6 +39,7 @@ const Header = () => {
                   {ROLE_LABELS[role]}
                 </Badge>
               )}
+              <NotificationBell />
               <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-muted-foreground hover:text-foreground ml-1">
                 <LogOut className="h-3.5 w-3.5" /> Выйти
               </Button>
