@@ -332,7 +332,7 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground max-w-sm mb-5">Выберите курс в магазине и оформите заявку — мы свяжемся с вами.</p>
                 <Button
                   className="rounded-xl gap-2"
-                  onClick={() => document.querySelector<HTMLButtonElement>('[data-value="shop"]')?.click()}
+                  onClick={goToShop}
                 >
                   <ShoppingBag className="h-4 w-4" />
                   Открыть магазин
