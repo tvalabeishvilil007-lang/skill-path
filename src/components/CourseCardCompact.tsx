@@ -2,7 +2,10 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ArrowRight } from "lucide-react";
+import { BookOpen, ArrowRight, Send } from "lucide-react";
+
+const getTelegramLink = (title: string) =>
+  `https://t.me/antonmpstats?text=${encodeURIComponent(`Здравствуйте! Хочу получить доступ к курсу "${title}". Подскажите, пожалуйста, по оплате.`)}`;
 
 const STATUS_LABELS: Record<string, string> = { new: "Новая", in_progress: "В обработке", awaiting_payment: "Ожидает оплату", paid: "Оплачено", access_granted: "Доступ открыт", rejected: "Отклонена" };
 const STATUS_VARIANTS: Record<string, string> = {
