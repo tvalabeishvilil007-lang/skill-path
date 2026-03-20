@@ -2,7 +2,10 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ArrowRight } from "lucide-react";
+import { BookOpen, ArrowRight, Send } from "lucide-react";
+
+const getTelegramLink = (title: string) =>
+  `https://t.me/antonmpstats?text=${encodeURIComponent(`Здравствуйте! Хочу получить доступ к курсу "${title}". Подскажите, пожалуйста, по оплате.`)}`;
 
 const STATUS_LABELS: Record<string, string> = { new: "Новая", in_progress: "В обработке", awaiting_payment: "Ожидает оплату", paid: "Оплачено", access_granted: "Доступ открыт", rejected: "Отклонена" };
 const STATUS_VARIANTS: Record<string, string> = {
@@ -45,26 +48,34 @@ const CourseCardCompact = ({ course, hasAccess, request, onRequestClick, accessO
           <p className="text-xs text-muted-foreground line-clamp-1">{course.short_description}</p>
         )}
 
-        <div className="mt-auto pt-1 flex items-center justify-between gap-2">
-          {course.price > 0 && (
-            <span className="text-sm font-bold tabular-nums">{Number(course.price).toLocaleString("ru-RU")} ₽</span>
-          )}
+        <div className="mt-auto pt-1 flex flex-col gap-1.5">
+          <div className="flex items-center justify-between gap-2">
+            {course.price > 0 && (
+              <span className="text-sm font-bold tabular-nums">{Number(course.price).toLocaleString("ru-RU")} ₽</span>
+            )}
 
-          {hasAccess ? (
-            <Button asChild size="sm" className="rounded-lg text-xs h-8 ml-auto">
-              <Link to={`/course/${course.slug}`}>
-                {accessOnly ? "Продолжить" : "Открыть"} <ArrowRight className="ml-1 h-3 w-3" />
-              </Link>
-            </Button>
-          ) : request ? (
-            <Badge className={`${STATUS_VARIANTS[request.status] || ""} border text-[10px] ml-auto`}>
-              {STATUS_LABELS[request.status] || request.status}
-            </Badge>
-          ) : !accessOnly && onRequestClick ? (
-            <Button size="sm" className="rounded-lg text-xs h-8 ml-auto" onClick={onRequestClick}>
-              Оформить заявку
-            </Button>
-          ) : null}
+            {hasAccess ? (
+              <Button asChild size="sm" className="rounded-lg text-xs h-8 ml-auto">
+                <Link to={`/course/${course.slug}`}>
+                  {accessOnly ? "Продолжить" : "Открыть"} <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
+              </Button>
+            ) : request ? (
+              <Badge className={`${STATUS_VARIANTS[request.status] || ""} border text-[10px] ml-auto`}>
+                {STATUS_LABELS[request.status] || request.status}
+              </Badge>
+            ) : !accessOnly && onRequestClick ? (
+              <Button size="sm" className="rounded-lg text-xs h-8 ml-auto" onClick={onRequestClick}>
+                Оформить заявку
+              </Button>
+            ) : null}
+          </div>
+
+          <Button asChild variant="secondary" size="sm" className="rounded-lg text-xs h-7 w-full">
+            <a href={getTelegramLink(course.title)} target="_blank" rel="noopener noreferrer">
+              <Send className="h-3 w-3 mr-1" /> Написать менеджеру
+            </a>
+          </Button>
         </div>
       </CardContent>
     </Card>
