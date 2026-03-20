@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Menu, X, LogOut, ShieldCheck } from "lucide-react";
+import NotificationBell from "@/components/NotificationBell";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ROLE_LABELS, useUserRole } from "@/hooks/useUserRole";
@@ -38,6 +39,7 @@ const Header = () => {
                   {ROLE_LABELS[role]}
                 </Badge>
               )}
+              <NotificationBell />
               <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-muted-foreground hover:text-foreground ml-1">
                 <LogOut className="h-3.5 w-3.5" /> Выйти
               </Button>
