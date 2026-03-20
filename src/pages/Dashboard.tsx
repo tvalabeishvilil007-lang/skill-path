@@ -92,7 +92,6 @@ const Dashboard = () => {
                       <ShoppingBag className="h-4 w-4" />
                       Перейти в магазин курсов
                   </Button>
-                  </Button>
                   {myCourses.length > 0 && (
                     <Button variant="outline" size="lg" className="rounded-xl gap-2" onClick={() => setActiveTab("courses")}>
                         Мои курсы
