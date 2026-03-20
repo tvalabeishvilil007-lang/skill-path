@@ -244,27 +244,14 @@ const Dashboard = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {myCourses.map((course: any) => (
-                  <Card key={course.id} className="overflow-hidden card-hover group">
-                    {course.cover_url ? (
-                      <div className="aspect-[16/9] overflow-hidden">
-                        <img src={course.cover_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      </div>
-                    ) : (
-                      <div className="aspect-[16/9] bg-muted/30 flex items-center justify-center">
-                        <BookOpen className="h-10 w-10 text-muted-foreground/20" />
-                      </div>
-                    )}
-                    <CardContent className="p-5">
-                      <h3 className="font-bold text-lg mb-4">{course.title}</h3>
-                      <Button asChild className="w-full rounded-xl gap-2" size="sm">
-                        <Link to={`/course/${course.slug}`}>
-                          Продолжить обучение <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <CourseCardCompact
+                    key={course.id}
+                    course={course}
+                    hasAccess={true}
+                    accessOnly
+                  />
                 ))}
               </div>
             )}
