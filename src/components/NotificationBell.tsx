@@ -69,9 +69,9 @@ export default function NotificationBell() {
                   </div>
                 );
 
-                if (n.course_id) {
+                if (n.course_id && n.courses?.slug) {
                   return (
-                    <Link key={n.id} to={`/course/${n.course_id}`} onClick={() => { if (!n.is_read) markAsRead.mutate(n.id); setOpen(false); }}>
+                    <Link key={n.id} to={`/course/${n.courses.slug}`} onClick={() => { if (!n.is_read) markAsRead.mutate(n.id); setOpen(false); }}>
                       {content}
                     </Link>
                   );
