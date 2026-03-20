@@ -12,6 +12,7 @@ export interface Notification {
   course_id: string | null;
   is_read: boolean;
   created_at: string;
+  courses?: { slug: string } | null;
 }
 
 export function useNotifications() {
