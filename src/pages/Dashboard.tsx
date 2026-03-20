@@ -32,6 +32,8 @@ const Dashboard = () => {
   const { data: accessRights } = useUserCourses(user?.id);
   const { data: requests } = useUserRequests(user?.id);
   const [requestCourse, setRequestCourse] = useState<{ id: string; title: string } | null>(null);
+  const [activeTab, setActiveTab] = useState("home");
+  const goToShop = () => setActiveTab("shop");
 
   if (authLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (!user) return <Navigate to="/login" replace />;
@@ -47,7 +49,7 @@ const Dashboard = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container py-8 px-4 max-w-6xl">
-        <Tabs defaultValue="home" className="space-y-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="grid w-full grid-cols-4 h-12 rounded-2xl bg-card border border-border/60 p-1 gap-1">
             {[
               { value: "home", label: "Главная", icon: Sparkles },
@@ -86,18 +88,14 @@ const Dashboard = () => {
                   }
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  <Button size="lg" className="rounded-xl gap-2 shadow-lg shadow-primary/20" asChild>
-                    <a href="#" onClick={(e) => { e.preventDefault(); document.querySelector<HTMLButtonElement>('[data-value="shop"]')?.click(); }}>
+                  <Button size="lg" className="rounded-xl gap-2 shadow-lg shadow-primary/20" onClick={goToShop}>
                       <ShoppingBag className="h-4 w-4" />
                       Перейти в магазин курсов
-                    </a>
                   </Button>
                   {myCourses.length > 0 && (
-                    <Button variant="outline" size="lg" className="rounded-xl gap-2" asChild>
-                      <a href="#" onClick={(e) => { e.preventDefault(); document.querySelector<HTMLButtonElement>('[data-value="courses"]')?.click(); }}>
+                    <Button variant="outline" size="lg" className="rounded-xl gap-2" onClick={() => setActiveTab("courses")}>
                         Мои курсы
                         <ArrowRight className="h-4 w-4" />
-                      </a>
                     </Button>
                   )}
                 </div>
@@ -180,7 +178,7 @@ const Dashboard = () => {
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground hover:text-foreground gap-1"
-                    onClick={() => document.querySelector<HTMLButtonElement>('[data-value="shop"]')?.click()}
+                    onClick={goToShop}
                   >
                     Все курсы <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
@@ -288,7 +286,7 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground max-w-sm mb-5">Откройте магазин, выберите интересующий курс и оформите заявку — менеджер свяжется с вами.</p>
                 <Button
                   className="rounded-xl gap-2"
-                  onClick={() => document.querySelector<HTMLButtonElement>('[data-value="shop"]')?.click()}
+                  onClick={goToShop}
                 >
                   <ShoppingBag className="h-4 w-4" />
                   Открыть магазин
@@ -332,7 +330,7 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground max-w-sm mb-5">Выберите курс в магазине и оформите заявку — мы свяжемся с вами.</p>
                 <Button
                   className="rounded-xl gap-2"
-                  onClick={() => document.querySelector<HTMLButtonElement>('[data-value="shop"]')?.click()}
+                  onClick={goToShop}
                 >
                   <ShoppingBag className="h-4 w-4" />
                   Открыть магазин
