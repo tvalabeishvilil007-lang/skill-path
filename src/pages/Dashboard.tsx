@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import RequestDialog from "@/components/RequestDialog";
+import CourseCardCompact from "@/components/CourseCardCompact";
 
 const STATUS_LABELS: Record<string, string> = { new: "Новая", in_progress: "В обработке", awaiting_payment: "Ожидает оплату", paid: "Оплачено", access_granted: "Доступ открыт", rejected: "Отклонена" };
 
