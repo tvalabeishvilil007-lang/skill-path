@@ -49,7 +49,7 @@ const Dashboard = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container py-8 px-4 max-w-6xl">
-        <Tabs defaultValue="home" className="space-y-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="grid w-full grid-cols-4 h-12 rounded-2xl bg-card border border-border/60 p-1 gap-1">
             {[
               { value: "home", label: "Главная", icon: Sparkles },
