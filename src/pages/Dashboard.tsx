@@ -94,11 +94,10 @@ const Dashboard = () => {
                   </Button>
                   </Button>
                   {myCourses.length > 0 && (
-                    <Button variant="outline" size="lg" className="rounded-xl gap-2" asChild>
-                      <a href="#" onClick={(e) => { e.preventDefault(); document.querySelector<HTMLButtonElement>('[data-value="courses"]')?.click(); }}>
+                    <Button variant="outline" size="lg" className="rounded-xl gap-2" onClick={() => setActiveTab("courses")}>
                         Мои курсы
                         <ArrowRight className="h-4 w-4" />
-                      </a>
+                    </Button>
                     </Button>
                   )}
                 </div>
