@@ -24,7 +24,7 @@ export function useNotifications() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("notifications")
-        .select("*")
+        .select("*, courses(slug)")
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
