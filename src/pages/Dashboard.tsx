@@ -184,39 +184,16 @@ const Dashboard = () => {
                     Все курсы <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {featuredCourses.map((course: any) => {
-                    const access = hasAccess(course.id);
-                    const req = getRequest(course.id);
-                    return (
-                      <Card key={course.id} className="overflow-hidden card-hover group">
-                        {course.cover_url ? (
-                          <div className="aspect-[16/9] overflow-hidden">
-                            <img src={course.cover_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          </div>
-                        ) : (
-                          <div className="aspect-[16/9] bg-muted/30 flex items-center justify-center">
-                            <BookOpen className="h-10 w-10 text-muted-foreground/20" />
-                          </div>
-                        )}
-                        <CardContent className="p-5 space-y-3">
-                          <h3 className="font-bold leading-tight">{course.title}</h3>
-                          {course.price > 0 && <p className="text-lg font-bold">{Number(course.price).toLocaleString("ru-RU")} ₽</p>}
-                          {access ? (
-                            <Button asChild className="w-full rounded-xl" size="sm">
-                              <Link to={`/course/${course.slug}`}>Перейти к курсу <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
-                            </Button>
-                          ) : req ? (
-                            <Badge className={`${STATUS_VARIANTS[req.status] || ""} border`}>{STATUS_LABELS[req.status] || req.status}</Badge>
-                          ) : (
-                            <Button className="w-full rounded-xl" size="sm" onClick={() => setRequestCourse({ id: course.id, title: course.title })}>
-                              Оформить заявку
-                            </Button>
-                          )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  {featuredCourses.map((course: any) => (
+                    <CourseCardCompact
+                      key={course.id}
+                      course={course}
+                      hasAccess={hasAccess(course.id)}
+                      request={getRequest(course.id)}
+                      onRequestClick={() => setRequestCourse({ id: course.id, title: course.title })}
+                    />
+                  ))}
                 </div>
               </div>
             )}
