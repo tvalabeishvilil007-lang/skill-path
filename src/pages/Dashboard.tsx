@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import RequestDialog from "@/components/RequestDialog";
+import CourseCardCompact from "@/components/CourseCardCompact";
 
 const STATUS_LABELS: Record<string, string> = { new: "Новая", in_progress: "В обработке", awaiting_payment: "Ожидает оплату", paid: "Оплачено", access_granted: "Доступ открыт", rejected: "Отклонена" };
 
@@ -183,39 +184,16 @@ const Dashboard = () => {
                     Все курсы <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {featuredCourses.map((course: any) => {
-                    const access = hasAccess(course.id);
-                    const req = getRequest(course.id);
-                    return (
-                      <Card key={course.id} className="overflow-hidden card-hover group">
-                        {course.cover_url ? (
-                          <div className="aspect-[16/9] overflow-hidden">
-                            <img src={course.cover_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          </div>
-                        ) : (
-                          <div className="aspect-[16/9] bg-muted/30 flex items-center justify-center">
-                            <BookOpen className="h-10 w-10 text-muted-foreground/20" />
-                          </div>
-                        )}
-                        <CardContent className="p-5 space-y-3">
-                          <h3 className="font-bold leading-tight">{course.title}</h3>
-                          {course.price > 0 && <p className="text-lg font-bold">{Number(course.price).toLocaleString("ru-RU")} ₽</p>}
-                          {access ? (
-                            <Button asChild className="w-full rounded-xl" size="sm">
-                              <Link to={`/course/${course.slug}`}>Перейти к курсу <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
-                            </Button>
-                          ) : req ? (
-                            <Badge className={`${STATUS_VARIANTS[req.status] || ""} border`}>{STATUS_LABELS[req.status] || req.status}</Badge>
-                          ) : (
-                            <Button className="w-full rounded-xl" size="sm" onClick={() => setRequestCourse({ id: course.id, title: course.title })}>
-                              Оформить заявку
-                            </Button>
-                          )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  {featuredCourses.map((course: any) => (
+                    <CourseCardCompact
+                      key={course.id}
+                      course={course}
+                      hasAccess={hasAccess(course.id)}
+                      request={getRequest(course.id)}
+                      onRequestClick={() => setRequestCourse({ id: course.id, title: course.title })}
+                    />
+                  ))}
                 </div>
               </div>
             )}
@@ -234,43 +212,16 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground max-w-sm">Мы готовим программы обучения. Загляните сюда позже!</p>
               </div>
             ) : (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {courses.map((course: any) => {
-                  const access = hasAccess(course.id);
-                  const req = getRequest(course.id);
-                  return (
-                    <Card key={course.id} className="overflow-hidden card-hover group">
-                      {course.cover_url ? (
-                        <div className="aspect-[16/9] overflow-hidden">
-                          <img src={course.cover_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        </div>
-                      ) : (
-                        <div className="aspect-[16/9] bg-muted/30 flex items-center justify-center">
-                          <BookOpen className="h-10 w-10 text-muted-foreground/20" />
-                        </div>
-                      )}
-                      <CardContent className="p-5 space-y-3">
-                        <h3 className="font-bold text-lg leading-tight">{course.title}</h3>
-                        {course.short_description && <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{course.short_description}</p>}
-                        {course.price > 0 && <p className="text-xl font-bold">{Number(course.price).toLocaleString("ru-RU")} ₽</p>}
-                        {access ? (
-                          <div className="space-y-2 pt-1">
-                            <Badge className="bg-success/10 text-success border border-success/20">✓ Доступ открыт</Badge>
-                            <Button asChild className="w-full rounded-xl" size="sm">
-                              <Link to={`/course/${course.slug}`}>Перейти к курсу <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
-                            </Button>
-                          </div>
-                        ) : req ? (
-                          <Badge className={`${STATUS_VARIANTS[req.status] || ""} border`}>{STATUS_LABELS[req.status] || req.status}</Badge>
-                        ) : (
-                          <Button className="w-full rounded-xl" size="sm" onClick={() => setRequestCourse({ id: course.id, title: course.title })}>
-                            Оформить заявку
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+              <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {courses.map((course: any) => (
+                  <CourseCardCompact
+                    key={course.id}
+                    course={course}
+                    hasAccess={hasAccess(course.id)}
+                    request={getRequest(course.id)}
+                    onRequestClick={() => setRequestCourse({ id: course.id, title: course.title })}
+                  />
+                ))}
               </div>
             )}
           </TabsContent>
@@ -293,27 +244,14 @@ const Dashboard = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {myCourses.map((course: any) => (
-                  <Card key={course.id} className="overflow-hidden card-hover group">
-                    {course.cover_url ? (
-                      <div className="aspect-[16/9] overflow-hidden">
-                        <img src={course.cover_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      </div>
-                    ) : (
-                      <div className="aspect-[16/9] bg-muted/30 flex items-center justify-center">
-                        <BookOpen className="h-10 w-10 text-muted-foreground/20" />
-                      </div>
-                    )}
-                    <CardContent className="p-5">
-                      <h3 className="font-bold text-lg mb-4">{course.title}</h3>
-                      <Button asChild className="w-full rounded-xl gap-2" size="sm">
-                        <Link to={`/course/${course.slug}`}>
-                          Продолжить обучение <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <CourseCardCompact
+                    key={course.id}
+                    course={course}
+                    hasAccess={true}
+                    accessOnly
+                  />
                 ))}
               </div>
             )}
