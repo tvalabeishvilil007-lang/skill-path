@@ -29,20 +29,24 @@ interface CourseCardCompactProps {
 const CourseCardCompact = ({ course, hasAccess, request, onRequestClick, accessOnly }: CourseCardCompactProps) => {
   return (
     <Card className="overflow-hidden group border-border/50 hover:border-primary/20 hover:shadow-lg hover:shadow-black/10 hover:-translate-y-0.5 transition-all duration-300 flex flex-col">
-      {/* Cover */}
-      {course.cover_url ? (
-        <div className="h-[130px] overflow-hidden shrink-0">
-          <img src={course.cover_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        </div>
-      ) : (
-        <div className="h-[130px] bg-muted/20 flex items-center justify-center shrink-0">
-          <BookOpen className="h-5 w-5 text-muted-foreground/25" />
-        </div>
-      )}
+      {/* Cover — clickable */}
+      <Link to={`/course/${course.slug}`} className="block shrink-0">
+        {course.cover_url ? (
+          <div className="h-[130px] overflow-hidden">
+            <img src={course.cover_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          </div>
+        ) : (
+          <div className="h-[130px] bg-muted/20 flex items-center justify-center">
+            <BookOpen className="h-5 w-5 text-muted-foreground/25" />
+          </div>
+        )}
+      </Link>
 
       {/* Content */}
       <CardContent className="p-3.5 flex flex-col flex-1 gap-2">
-        <h3 className="font-semibold text-sm leading-snug line-clamp-2">{course.title}</h3>
+        <Link to={`/course/${course.slug}`} className="hover:text-primary transition-colors">
+          <h3 className="font-semibold text-sm leading-snug line-clamp-2">{course.title}</h3>
+        </Link>
 
         {course.short_description && !accessOnly && (
           <p className="text-xs text-muted-foreground line-clamp-1">{course.short_description}</p>
