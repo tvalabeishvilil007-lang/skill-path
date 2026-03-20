@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Loader2, Upload, Video, X } from "lucide-react";
+import { slugify } from "@/lib/slugify";
+import { uploadFile } from "@/lib/storage";
 
 const empty = {
-  module_id: "", title: "", slug: "", description: "", video_url: "",
+  module_id: "", title: "", description: "",
   content_type: "video" as string, duration_seconds: 0, sort_order: 0,
-  is_published: true, is_free_preview: false, player_asset_id: "",
+  is_published: true, is_free_preview: false,
+  video_storage_path: "",
 };
 
 const AdminLessons = () => {
@@ -23,6 +26,9 @@ const AdminLessons = () => {
   const [editItem, setEditItem] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(empty);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const videoRef = useRef<HTMLInputElement>(null);
 
   const { data: modules } = useQuery({
     queryKey: ["admin-modules-list"],
@@ -42,25 +48,52 @@ const AdminLessons = () => {
   });
 
   const handleSave = async () => {
-    if (!form.title || !form.slug || !form.module_id) { toast.error("Заполните обязательные поля"); return; }
-    const payload = {
-      module_id: form.module_id, title: form.title, slug: form.slug, description: form.description,
-      video_url: form.video_url || null, content_type: form.content_type as any,
-      duration_seconds: form.duration_seconds || null, sort_order: form.sort_order,
-      is_published: form.is_published, is_free_preview: form.is_free_preview,
-      player_asset_id: form.player_asset_id || null,
-    };
-    if (editItem) {
-      const { error } = await supabase.from("lessons").update(payload).eq("id", editItem.id);
-      if (error) { toast.error(error.message); return; }
-      toast.success("Урок обновлён");
-    } else {
-      const { error } = await supabase.from("lessons").insert(payload);
-      if (error) { toast.error(error.message); return; }
-      toast.success("Урок создан");
+    if (!form.title || !form.module_id) { toast.error("Введите название и выберите модуль"); return; }
+    
+    setUploading(true);
+    try {
+      let videoUrl = form.video_storage_path;
+      
+      // Upload video if new file selected
+      if (videoFile) {
+        const path = `lessons/${Date.now()}-${videoFile.name}`;
+        videoUrl = await uploadFile('course-videos', videoFile, path);
+        toast.success("Видео загружено");
+      }
+
+      const slug = slugify(form.title);
+      
+      const payload = {
+        module_id: form.module_id, title: form.title, slug,
+        description: form.description || null,
+        video_url: videoUrl || null,
+        content_type: form.content_type as any,
+        duration_seconds: form.duration_seconds || null, sort_order: form.sort_order,
+        is_published: form.is_published, is_free_preview: form.is_free_preview,
+      };
+
+      if (editItem) {
+        if (editItem.title === form.title) payload.slug = editItem.slug;
+        const { error } = await supabase.from("lessons").update(payload).eq("id", editItem.id);
+        if (error) { toast.error(error.message); return; }
+        toast.success("Урок обновлён");
+      } else {
+        const { error } = await supabase.from("lessons").insert(payload);
+        if (error) {
+          if (error.message.includes('duplicate') || error.message.includes('unique')) {
+            payload.slug = slug + '-' + Date.now().toString(36);
+            const { error: e2 } = await supabase.from("lessons").insert(payload);
+            if (e2) { toast.error(e2.message); return; }
+          } else { toast.error(error.message); return; }
+        }
+        toast.success("Урок создан");
+      }
+      qc.invalidateQueries({ queryKey: ["admin-lessons"] });
+      setOpen(false);
+      setVideoFile(null);
+    } finally {
+      setUploading(false);
     }
-    qc.invalidateQueries({ queryKey: ["admin-lessons"] });
-    setOpen(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -71,16 +104,18 @@ const AdminLessons = () => {
     qc.invalidateQueries({ queryKey: ["admin-lessons"] });
   };
 
-  const openCreate = () => { setEditItem(null); setForm(empty); setOpen(true); };
+  const openCreate = () => { setEditItem(null); setForm(empty); setVideoFile(null); setOpen(true); };
   const openEdit = (item: any) => {
     setEditItem(item);
     setForm({
-      module_id: item.module_id, title: item.title, slug: item.slug,
-      description: item.description || "", video_url: item.video_url || "",
+      module_id: item.module_id, title: item.title,
+      description: item.description || "",
       content_type: item.content_type, duration_seconds: item.duration_seconds || 0,
       sort_order: item.sort_order, is_published: item.is_published,
-      is_free_preview: item.is_free_preview, player_asset_id: item.player_asset_id || "",
+      is_free_preview: item.is_free_preview,
+      video_storage_path: item.video_url || "",
     });
+    setVideoFile(null);
     setOpen(true);
   };
 
@@ -107,6 +142,7 @@ const AdminLessons = () => {
                 <th className="text-left p-3 font-medium">Название</th>
                 <th className="text-left p-3 font-medium hidden lg:table-cell">Модуль / Курс</th>
                 <th className="text-left p-3 font-medium">Тип</th>
+                <th className="text-left p-3 font-medium">Видео</th>
                 <th className="text-left p-3 font-medium">Статус</th>
                 <th className="text-right p-3 font-medium">Действия</th>
               </tr>
@@ -122,6 +158,13 @@ const AdminLessons = () => {
                     {(l.modules as any)?.title} / {(l.modules as any)?.courses?.title}
                   </td>
                   <td className="p-3"><Badge variant="secondary">{typeLbl[l.content_type] || l.content_type}</Badge></td>
+                  <td className="p-3">
+                    {l.video_url ? (
+                      <Badge className="bg-primary/10 text-primary text-[10px]"><Video className="h-3 w-3 mr-1" />Есть</Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                  </td>
                   <td className="p-3"><Badge className={l.is_published ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}>{l.is_published ? "Опубл." : "Скрыт"}</Badge></td>
                   <td className="p-3 text-right space-x-1">
                     <Button variant="ghost" size="icon" onClick={() => openEdit(l)}><Pencil className="h-4 w-4" /></Button>
@@ -129,7 +172,7 @@ const AdminLessons = () => {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">Нет данных</td></tr>}
+              {filtered.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Нет данных</td></tr>}
             </tbody>
           </table>
         </div>
@@ -139,7 +182,7 @@ const AdminLessons = () => {
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editItem ? "Редактировать урок" : "Новый урок"}</DialogTitle>
-            <DialogDescription>Заполните данные урока</DialogDescription>
+            <DialogDescription>Slug генерируется автоматически из названия</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -161,11 +204,40 @@ const AdminLessons = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2"><Label>Название</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Slug</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
+            <div className="space-y-2 md:col-span-2"><Label>Название</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Например: Введение в тему" /></div>
             <div className="space-y-2 md:col-span-2"><Label>Описание</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
-            <div className="space-y-2"><Label>Video URL</Label><Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Player Asset ID</Label><Input value={form.player_asset_id} onChange={(e) => setForm({ ...form, player_asset_id: e.target.value })} /></div>
+            
+            {/* Video upload */}
+            <div className="space-y-2 md:col-span-2">
+              <Label>Видеофайл</Label>
+              <input ref={videoRef} type="file" accept="video/*" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) setVideoFile(f); }} />
+              
+              {videoFile ? (
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl border border-border">
+                  <Video className="h-5 w-5 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{videoFile.name}</p>
+                    <p className="text-xs text-muted-foreground">{(videoFile.size / 1024 / 1024).toFixed(1)} МБ</p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setVideoFile(null)}><X className="h-3.5 w-3.5" /></Button>
+                </div>
+              ) : form.video_storage_path ? (
+                <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/20">
+                  <Video className="h-5 w-5 text-primary shrink-0" />
+                  <p className="text-sm flex-1">Видео загружено</p>
+                  <Button variant="outline" size="sm" onClick={() => videoRef.current?.click()}>Заменить</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setForm(f => ({ ...f, video_storage_path: "" }))}>Удалить</Button>
+                </div>
+              ) : (
+                <button onClick={() => videoRef.current?.click()}
+                  className="w-full h-24 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors">
+                  <Upload className="h-5 w-5" />
+                  <span className="text-sm">Загрузить видео</span>
+                </button>
+              )}
+            </div>
+
             <div className="space-y-2"><Label>Длительность (сек)</Label><Input type="number" value={form.duration_seconds} onChange={(e) => setForm({ ...form, duration_seconds: Number(e.target.value) })} /></div>
             <div className="space-y-2"><Label>Порядок</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} /></div>
             <div className="flex items-center gap-4 md:col-span-2">
@@ -175,11 +247,13 @@ const AdminLessons = () => {
               </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="les-free" checked={form.is_free_preview} onChange={(e) => setForm({ ...form, is_free_preview: e.target.checked })} className="rounded" />
-                <Label htmlFor="les-free">Free Preview</Label>
+                <Label htmlFor="les-free">Бесплатный превью</Label>
               </div>
             </div>
           </div>
-          <Button onClick={handleSave} className="w-full mt-4">Сохранить</Button>
+          <Button onClick={handleSave} disabled={uploading} className="w-full mt-4">
+            {uploading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Загрузка...</> : "Сохранить"}
+          </Button>
         </DialogContent>
       </Dialog>
     </div>

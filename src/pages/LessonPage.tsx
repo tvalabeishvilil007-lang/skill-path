@@ -4,15 +4,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, ArrowLeft, ArrowRight, Play, Lock, CheckCircle } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight, Play, Lock, CheckCircle, FileText, Download } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { getSignedUrl } from "@/lib/storage";
 
 const LessonPage = () => {
   const { courseSlug, lessonSlug } = useParams();
   const { user, loading: authLoading } = useAuth();
   const { data: course, isLoading } = useCourseBySlug(courseSlug || "");
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
   const { data: accessRight } = useQuery({
     queryKey: ["user-access", user?.id, course?.id],
@@ -32,6 +34,53 @@ const LessonPage = () => {
   const currentLesson = allLessons[currentIndex];
   const prevLesson = allLessons[currentIndex - 1];
   const nextLesson = allLessons[currentIndex + 1];
+
+  // Fetch lesson materials
+  const { data: materials } = useQuery({
+    queryKey: ["lesson-materials", currentLesson?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("lesson_materials").select("*").eq("lesson_id", currentLesson!.id).order("sort_order");
+      return data || [];
+    },
+    enabled: !!currentLesson?.id && !!accessRight,
+  });
+
+  // Get signed URL for video if it's a storage path (not an external URL)
+  useEffect(() => {
+    const loadVideo = async () => {
+      if (!currentLesson?.video_url || !accessRight) {
+        setVideoUrl(null);
+        return;
+      }
+      const url = currentLesson.video_url;
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        setVideoUrl(url);
+      } else {
+        try {
+          const signed = await getSignedUrl('course-videos', url, 7200);
+          setVideoUrl(signed);
+        } catch {
+          setVideoUrl(null);
+        }
+      }
+    };
+    loadVideo();
+  }, [currentLesson?.video_url, accessRight]);
+
+  const handleDownloadMaterial = async (material: any) => {
+    const url = material.file_url;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      window.open(url, '_blank');
+    } else {
+      try {
+        const signed = await getSignedUrl('course-materials', url, 3600);
+        window.open(signed, '_blank');
+      } catch {
+        // Fallback
+        window.open(url, '_blank');
+      }
+    }
+  };
 
   if (authLoading || isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (!user) return <Navigate to="/login" replace />;
@@ -77,9 +126,13 @@ const LessonPage = () => {
 
             <h1 className="text-2xl md:text-3xl font-bold">{currentLesson.title}</h1>
 
-            {currentLesson.video_url && (
+            {videoUrl && (
               <div className="aspect-video bg-card rounded-2xl overflow-hidden border border-border">
-                <iframe src={currentLesson.video_url} className="w-full h-full" allowFullScreen allow="autoplay; fullscreen" />
+                {videoUrl.includes('supabase') || videoUrl.includes('storage') ? (
+                  <video src={videoUrl} controls className="w-full h-full" controlsList="nodownload" />
+                ) : (
+                  <iframe src={videoUrl} className="w-full h-full" allowFullScreen allow="autoplay; fullscreen" />
+                )}
               </div>
             )}
 
@@ -87,6 +140,33 @@ const LessonPage = () => {
               <Card className="rounded-2xl">
                 <CardContent className="p-6 prose prose-invert max-w-none text-foreground/90 leading-relaxed">
                   <p>{currentLesson.description}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Materials */}
+            {materials && materials.length > 0 && (
+              <Card className="rounded-2xl">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Материалы урока</h3>
+                  <div className="space-y-2">
+                    {materials.map((m: any) => (
+                      <button
+                        key={m.id}
+                        onClick={() => handleDownloadMaterial(m)}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/60 transition-colors text-left"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{m.title}</p>
+                          <p className="text-xs text-muted-foreground capitalize">{m.file_type}</p>
+                        </div>
+                        <Download className="h-4 w-4 text-muted-foreground" />
+                      </button>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             )}

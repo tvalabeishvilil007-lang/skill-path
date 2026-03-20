@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Loader2, Upload, X, Image } from "lucide-react";
+import { slugify } from "@/lib/slugify";
+import { uploadFile, getPublicUrl } from "@/lib/storage";
 
 const emptyForm = {
-  title: "", slug: "", short_description: "", full_description: "",
+  title: "", short_description: "", full_description: "",
   category_id: "", price: 0, old_price: null as number | null,
   status: "draft" as string, is_featured: false, level: "",
   duration: "", access_type: "forever", author_name: "",
+  cover_url: "" as string,
 };
 
 const AdminCourses = () => {
@@ -25,6 +28,8 @@ const AdminCourses = () => {
   const [editItem, setEditItem] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: categories } = useQuery({
     queryKey: ["admin-categories"],
@@ -40,22 +45,53 @@ const AdminCourses = () => {
     },
   });
 
+  const handleCoverUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const path = await uploadFile('course-covers', file, `covers/${Date.now()}-${file.name}`);
+      const url = getPublicUrl('course-covers', path);
+      setForm(f => ({ ...f, cover_url: url }));
+      toast.success("Обложка загружена");
+    } catch (e: any) {
+      toast.error(e.message || "Ошибка загрузки");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSave = async () => {
-    if (!form.title || !form.slug) { toast.error("Заполните название и slug"); return; }
+    if (!form.title) { toast.error("Введите название курса"); return; }
+    
+    const slug = slugify(form.title);
+    
     const payload = {
-      title: form.title, slug: form.slug, short_description: form.short_description,
+      title: form.title, slug, short_description: form.short_description,
       full_description: form.full_description, category_id: form.category_id || null,
       price: form.price, old_price: form.old_price, status: form.status as any,
       is_featured: form.is_featured, level: form.level, duration: form.duration,
       access_type: form.access_type, author_name: form.author_name,
+      cover_url: form.cover_url || null,
     };
     if (editItem) {
+      // Keep existing slug if title hasn't changed
+      if (editItem.title === form.title) {
+        payload.slug = editItem.slug;
+      }
       const { error } = await supabase.from("courses").update(payload).eq("id", editItem.id);
       if (error) { toast.error(error.message); return; }
       toast.success("Курс обновлён");
     } else {
       const { error } = await supabase.from("courses").insert(payload);
-      if (error) { toast.error(error.message); return; }
+      if (error) {
+        if (error.message.includes('duplicate') || error.message.includes('unique')) {
+          // Auto-add suffix
+          payload.slug = slug + '-' + Date.now().toString(36);
+          const { error: e2 } = await supabase.from("courses").insert(payload);
+          if (e2) { toast.error(e2.message); return; }
+        } else {
+          toast.error(error.message); return;
+        }
+      }
       toast.success("Курс создан");
     }
     qc.invalidateQueries({ queryKey: ["admin-courses"] });
@@ -74,11 +110,12 @@ const AdminCourses = () => {
   const openEdit = (item: any) => {
     setEditItem(item);
     setForm({
-      title: item.title, slug: item.slug, short_description: item.short_description || "",
+      title: item.title, short_description: item.short_description || "",
       full_description: item.full_description || "", category_id: item.category_id || "",
       price: Number(item.price), old_price: item.old_price ? Number(item.old_price) : null,
       status: item.status, is_featured: item.is_featured, level: item.level || "",
       duration: item.duration || "", access_type: item.access_type, author_name: item.author_name || "",
+      cover_url: item.cover_url || "",
     });
     setOpen(true);
   };
@@ -119,8 +156,16 @@ const AdminCourses = () => {
                 {filtered.map((c) => (
                   <tr key={c.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                     <td className="p-4">
-                      <p className="font-medium">{c.title}</p>
-                      <p className="text-xs text-muted-foreground font-mono">{c.slug}</p>
+                      <div className="flex items-center gap-3">
+                        {c.cover_url ? (
+                          <img src={c.cover_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                            <Image className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <p className="font-medium">{c.title}</p>
+                      </div>
                     </td>
                     <td className="p-4 hidden md:table-cell text-muted-foreground">{(c.categories as any)?.name || "—"}</td>
                     <td className="p-4 font-semibold">{new Intl.NumberFormat("ru-RU").format(Number(c.price))} ₽</td>
@@ -142,13 +187,35 @@ const AdminCourses = () => {
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl">{editItem ? "Редактировать курс" : "Новый курс"}</DialogTitle>
-            <DialogDescription>Заполните данные курса</DialogDescription>
+            <DialogDescription>Slug генерируется автоматически из названия</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-            <div className="space-y-2"><Label className="text-sm font-medium">Название</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="h-10 rounded-xl" /></div>
-            <div className="space-y-2"><Label className="text-sm font-medium">Slug</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="h-10 rounded-xl" /></div>
-            <div className="space-y-2 md:col-span-2"><Label className="text-sm font-medium">Краткое описание</Label><Textarea value={form.short_description} onChange={(e) => setForm({ ...form, short_description: e.target.value })} rows={2} className="rounded-xl" /></div>
-            <div className="space-y-2 md:col-span-2"><Label className="text-sm font-medium">Полное описание</Label><Textarea value={form.full_description} onChange={(e) => setForm({ ...form, full_description: e.target.value })} rows={4} className="rounded-xl" /></div>
+            {/* Cover upload */}
+            <div className="md:col-span-2 space-y-2">
+              <Label className="text-sm font-medium">Обложка курса</Label>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f); }} />
+              {form.cover_url ? (
+                <div className="relative w-full h-40 rounded-xl overflow-hidden border border-border">
+                  <img src={form.cover_url} alt="" className="w-full h-full object-cover" />
+                  <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 rounded-full"
+                    onClick={() => setForm(f => ({ ...f, cover_url: "" }))}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  className="w-full h-32 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+                >
+                  {uploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Upload className="h-6 w-6" />}
+                  <span className="text-sm">{uploading ? "Загрузка..." : "Нажмите для загрузки обложки"}</span>
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-2"><Label className="text-sm font-medium">Название</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Например: WB с нуля" className="h-10 rounded-xl" /></div>
             <div className="space-y-2">
               <Label className="text-sm font-medium">Категория</Label>
               <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
@@ -158,6 +225,8 @@ const AdminCourses = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2 md:col-span-2"><Label className="text-sm font-medium">Краткое описание</Label><Textarea value={form.short_description} onChange={(e) => setForm({ ...form, short_description: e.target.value })} rows={2} className="rounded-xl" /></div>
+            <div className="space-y-2 md:col-span-2"><Label className="text-sm font-medium">Полное описание</Label><Textarea value={form.full_description} onChange={(e) => setForm({ ...form, full_description: e.target.value })} rows={4} className="rounded-xl" /></div>
             <div className="space-y-2">
               <Label className="text-sm font-medium">Статус</Label>
               <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>

@@ -697,6 +697,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_unique_slug: {
+        Args: { p_existing_id?: string; p_table: string; p_title: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
