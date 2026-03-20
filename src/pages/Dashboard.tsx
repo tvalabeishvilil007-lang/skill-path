@@ -180,7 +180,7 @@ const Dashboard = () => {
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground hover:text-foreground gap-1"
-                    onClick={() => document.querySelector<HTMLButtonElement>('[data-value="shop"]')?.click()}
+                    onClick={goToShop}
                   >
                     Все курсы <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
