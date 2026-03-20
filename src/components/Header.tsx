@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Menu, X, LogOut, ShieldCheck } from "lucide-react";
+import NotificationBell from "@/components/NotificationBell";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ROLE_LABELS, useUserRole } from "@/hooks/useUserRole";
