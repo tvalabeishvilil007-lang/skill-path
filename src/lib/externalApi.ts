@@ -63,6 +63,7 @@ export const externalApi = {
     clientName: string;
     clientTelegram?: string;
     text: string;
+    purchaseUrl?: string;
   }) {
     try {
       await fetch(`${API_BASE}/notify-message`, {
