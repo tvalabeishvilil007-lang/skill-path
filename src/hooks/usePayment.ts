@@ -115,6 +115,7 @@ export const useCreatePaymentRequest = () => {
         amount: coursePrice,
         status: "new",
         message: `Новый запрос реквизитов от ${userName || userEmail || "пользователя"}`,
+        purchaseUrl: window.location.href,
       });
 
       return pr;
