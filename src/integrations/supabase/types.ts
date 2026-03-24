@@ -487,6 +487,124 @@ export type Database = {
           },
         ]
       }
+      payment_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          message_type: string
+          metadata: Json | null
+          payment_request_id: string
+          sender_id: string | null
+          sender_type: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          message_type?: string
+          metadata?: Json | null
+          payment_request_id: string
+          sender_id?: string | null
+          sender_type?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          message_type?: string
+          metadata?: Json | null
+          payment_request_id?: string
+          sender_id?: string | null
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_messages_payment_request_id_fkey"
+            columns: ["payment_request_id"]
+            isOneToOne: false
+            referencedRelation: "payment_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_requests: {
+        Row: {
+          access_source: string | null
+          admin_id: string | null
+          course_id: string
+          created_at: string
+          id: string
+          payment_details_snapshot: string | null
+          receipt_file_type: string | null
+          receipt_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_source?: string | null
+          admin_id?: string | null
+          course_id: string
+          created_at?: string
+          id?: string
+          payment_details_snapshot?: string | null
+          receipt_file_type?: string | null
+          receipt_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_source?: string | null
+          admin_id?: string | null
+          course_id?: string
+          created_at?: string
+          id?: string
+          payment_details_snapshot?: string | null
+          receipt_file_type?: string | null
+          receipt_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_requests_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          payment_details: string
+          set_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          payment_details: string
+          set_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          payment_details?: string
+          set_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           categories_open: number
