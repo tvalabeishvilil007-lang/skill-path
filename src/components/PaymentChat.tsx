@@ -10,6 +10,7 @@ interface PaymentChatProps {
   paymentRequestId: string;
   courseTitle?: string;
   userName?: string;
+  userTelegram?: string;
 }
 
 const MESSAGE_ICONS: Record<string, any> = {
