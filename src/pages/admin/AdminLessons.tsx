@@ -31,6 +31,7 @@ const typeLbl: Record<string, string> = { video: "Видео", text: "Текст
 const AdminLessons = () => {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [editItem, setEditItem] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(empty);
@@ -40,10 +41,15 @@ const AdminLessons = () => {
   const [videoBrowserOpen, setVideoBrowserOpen] = useState(false);
   const materialsRef = useRef<LessonMaterialsHandle>(null);
 
+  const { data: courses } = useQuery({
+    queryKey: ["admin-courses-list"],
+    queryFn: async () => { const { data } = await supabase.from("courses").select("id, title").order("title"); return data || []; },
+  });
+
   const { data: modules } = useQuery({
     queryKey: ["admin-modules-list"],
     queryFn: async () => {
-      const { data } = await supabase.from("modules").select("id, title, courses(title)").order("sort_order");
+      const { data } = await supabase.from("modules").select("id, title, course_id, courses(title)").order("sort_order");
       return data || [];
     },
   });
