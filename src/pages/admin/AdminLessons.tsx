@@ -68,6 +68,25 @@ const AdminLessons = () => {
     },
   });
 
+  const savePendingMaterials = async (lessonId: string) => {
+    const pending = materialsRef.current?.getPendingMaterials() || [];
+    for (let i = 0; i < pending.length; i++) {
+      const pm = pending[i];
+      let fileUrl = pm.url;
+      let detectedType = pm.type;
+      if (pm.file) {
+        const path = `materials/${Date.now()}-${pm.file.name}`;
+        fileUrl = await uploadFile("course-materials", pm.file, path);
+        const ext = pm.file.name.split(".").pop()?.toLowerCase();
+        if (ext === "pdf") detectedType = "pdf";
+      }
+      await supabase.from("lesson_materials").insert({
+        lesson_id: lessonId, title: pm.title, file_url: fileUrl, file_type: detectedType, sort_order: i,
+      });
+    }
+    materialsRef.current?.clearPending();
+  };
+
   const handleSave = async () => {
     if (!form.title || !form.module_id) { toast.error("Введите название и выберите модуль"); return; }
 
