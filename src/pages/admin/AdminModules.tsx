@@ -81,7 +81,7 @@ const AdminModules = () => {
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="w-64">
-          <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+          <Select value={selectedCourseId || "all"} onValueChange={(v) => setSelectedCourseId(v === "all" ? "" : v)}>
             <SelectTrigger><SelectValue placeholder="Все курсы" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Все курсы</SelectItem>
