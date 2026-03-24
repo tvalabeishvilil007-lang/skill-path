@@ -17,11 +17,11 @@ import {
 import { slugify } from "@/lib/slugify";
 import { uploadFile } from "@/lib/storage";
 import StorageFileBrowser from "@/components/admin/StorageFileBrowser";
-import LessonMaterials from "@/components/admin/LessonMaterials";
+import LessonMaterials, { type LessonMaterialsHandle, type PendingMaterial } from "@/components/admin/LessonMaterials";
 
 const empty = {
   module_id: "", title: "", description: "",
-  content_type: "video" as string, duration_seconds: 0, sort_order: 0,
+  content_type: "video" as string,
   is_published: true, is_free_preview: false,
   video_storage_path: "",
 };
@@ -38,6 +38,7 @@ const AdminLessons = () => {
   const [uploading, setUploading] = useState(false);
   const videoRef = useRef<HTMLInputElement>(null);
   const [videoBrowserOpen, setVideoBrowserOpen] = useState(false);
+  const materialsRef = useRef<LessonMaterialsHandle>(null);
 
   const { data: modules } = useQuery({
     queryKey: ["admin-modules-list"],
@@ -67,6 +68,25 @@ const AdminLessons = () => {
     },
   });
 
+  const savePendingMaterials = async (lessonId: string) => {
+    const pending = materialsRef.current?.getPendingMaterials() || [];
+    for (let i = 0; i < pending.length; i++) {
+      const pm = pending[i];
+      let fileUrl = pm.url;
+      let detectedType = pm.type;
+      if (pm.file) {
+        const path = `materials/${Date.now()}-${pm.file.name}`;
+        fileUrl = await uploadFile("course-materials", pm.file, path);
+        const ext = pm.file.name.split(".").pop()?.toLowerCase();
+        if (ext === "pdf") detectedType = "pdf";
+      }
+      await supabase.from("lesson_materials").insert({
+        lesson_id: lessonId, title: pm.title, file_url: fileUrl, file_type: detectedType, sort_order: i,
+      });
+    }
+    materialsRef.current?.clearPending();
+  };
+
   const handleSave = async () => {
     if (!form.title || !form.module_id) { toast.error("Введите название и выберите модуль"); return; }
 
@@ -82,13 +102,20 @@ const AdminLessons = () => {
 
       const slug = slugify(form.title);
 
+      // Auto-calculate sort_order for new lessons
+      let sortOrder = 0;
+      if (!editItem) {
+        const existing = data?.filter(l => l.module_id === form.module_id) || [];
+        sortOrder = existing.length > 0 ? Math.max(...existing.map(l => l.sort_order)) + 1 : 0;
+      }
+
       const payload = {
         module_id: form.module_id, title: form.title, slug,
         description: form.description || null,
         video_url: videoUrl || null,
         content_type: form.content_type as any,
-        duration_seconds: form.duration_seconds || null, sort_order: form.sort_order,
         is_published: form.is_published, is_free_preview: form.is_free_preview,
+        ...(editItem ? {} : { sort_order: sortOrder }),
       };
 
       if (editItem) {
@@ -97,13 +124,16 @@ const AdminLessons = () => {
         if (error) { toast.error(error.message); return; }
         toast.success("Урок обновлён");
       } else {
-        const { error } = await supabase.from("lessons").insert(payload);
+        const { data: inserted, error } = await supabase.from("lessons").insert(payload).select("id").single();
         if (error) {
           if (error.message.includes("duplicate") || error.message.includes("unique")) {
             payload.slug = slug + "-" + Date.now().toString(36);
-            const { error: e2 } = await supabase.from("lessons").insert(payload);
+            const { data: inserted2, error: e2 } = await supabase.from("lessons").insert(payload).select("id").single();
             if (e2) { toast.error(e2.message); return; }
+            if (inserted2) await savePendingMaterials(inserted2.id);
           } else { toast.error(error.message); return; }
+        } else if (inserted) {
+          await savePendingMaterials(inserted.id);
         }
         toast.success("Урок создан");
       }
@@ -130,8 +160,8 @@ const AdminLessons = () => {
     setForm({
       module_id: item.module_id, title: item.title,
       description: item.description || "",
-      content_type: item.content_type, duration_seconds: item.duration_seconds || 0,
-      sort_order: item.sort_order, is_published: item.is_published,
+      content_type: item.content_type,
+      is_published: item.is_published,
       is_free_preview: item.is_free_preview,
       video_storage_path: item.video_url || "",
     });
@@ -317,22 +347,12 @@ const AdminLessons = () => {
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <FileText className="h-4 w-4" />Файлы урока
               </h3>
-              <LessonMaterials lessonId={editItem?.id || null} />
+              <LessonMaterials ref={materialsRef} lessonId={editItem?.id || null} />
             </section>
 
             {/* ── Section: Настройки ── */}
             <section className="space-y-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Настройки</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Длительность (сек)</Label>
-                  <Input type="number" value={form.duration_seconds} onChange={(e) => setForm({ ...form, duration_seconds: Number(e.target.value) })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Порядок</Label>
-                  <Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} />
-                </div>
-              </div>
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2.5">
                   <Switch id="les-pub" checked={form.is_published} onCheckedChange={(v) => setForm({ ...form, is_published: v })} />

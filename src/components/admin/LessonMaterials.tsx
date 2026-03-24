@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useImperativeHandle, forwardRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -20,19 +20,31 @@ const fileTypes = [
 
 const materialIcon = (name: string, fileType?: string) => {
   const ext = name.split(".").pop()?.toLowerCase() || fileType || "";
-  if (["pdf"].includes(ext)) return <FileText className="h-4 w-4 text-red-500 shrink-0" />;
-  if (["xls", "xlsx", "csv"].includes(ext)) return <FileSpreadsheet className="h-4 w-4 text-green-600 shrink-0" />;
-  if (["doc", "docx"].includes(ext)) return <FileText className="h-4 w-4 text-blue-500 shrink-0" />;
-  if (["ppt", "pptx"].includes(ext)) return <FileText className="h-4 w-4 text-orange-500 shrink-0" />;
+  if (["pdf"].includes(ext)) return <FileText className="h-4 w-4 text-destructive shrink-0" />;
+  if (["xls", "xlsx", "csv"].includes(ext)) return <FileSpreadsheet className="h-4 w-4 text-success shrink-0" />;
+  if (["doc", "docx"].includes(ext)) return <FileText className="h-4 w-4 text-primary shrink-0" />;
+  if (["ppt", "pptx"].includes(ext)) return <FileText className="h-4 w-4 text-accent shrink-0" />;
   if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) return <Film className="h-4 w-4 text-primary shrink-0" />;
   return <File className="h-4 w-4 text-muted-foreground shrink-0" />;
 };
+
+export interface PendingMaterial {
+  file: File | null;
+  url: string;
+  title: string;
+  type: string;
+}
+
+export interface LessonMaterialsHandle {
+  getPendingMaterials: () => PendingMaterial[];
+  clearPending: () => void;
+}
 
 interface LessonMaterialsProps {
   lessonId: string | null;
 }
 
-const LessonMaterials = ({ lessonId }: LessonMaterialsProps) => {
+const LessonMaterials = forwardRef<LessonMaterialsHandle, LessonMaterialsProps>(({ lessonId }, ref) => {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -42,6 +54,13 @@ const LessonMaterials = ({ lessonId }: LessonMaterialsProps) => {
   const [addUrl, setAddUrl] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [browserOpen, setBrowserOpen] = useState(false);
+  // Pending materials for new lessons (before save)
+  const [pendingMaterials, setPendingMaterials] = useState<PendingMaterial[]>([]);
+
+  useImperativeHandle(ref, () => ({
+    getPendingMaterials: () => pendingMaterials,
+    clearPending: () => setPendingMaterials([]),
+  }));
 
   const { data: materials, isLoading } = useQuery({
     queryKey: ["lesson-materials-inline", lessonId],
@@ -53,11 +72,19 @@ const LessonMaterials = ({ lessonId }: LessonMaterialsProps) => {
     enabled: !!lessonId,
   });
 
-  const handleAdd = async () => {
-    if (!lessonId) { toast.error("Сначала сохраните урок"); return; }
+  const addPendingOrSave = async () => {
     if (!addTitle) { toast.error("Введите название"); return; }
     if (!addFile && !addUrl) { toast.error("Загрузите файл или укажите ссылку"); return; }
 
+    if (!lessonId) {
+      // Queue for later
+      setPendingMaterials(prev => [...prev, { file: addFile, url: addUrl, title: addTitle, type: addType }]);
+      toast.success("Материал добавлен (сохранится вместе с уроком)");
+      resetAddForm();
+      return;
+    }
+
+    // Save directly
     setUploading(true);
     try {
       let fileUrl = addUrl;
@@ -80,13 +107,17 @@ const LessonMaterials = ({ lessonId }: LessonMaterialsProps) => {
       if (error) { toast.error(error.message); return; }
       toast.success("Материал добавлен");
       qc.invalidateQueries({ queryKey: ["lesson-materials-inline", lessonId] });
-      setAddTitle("");
-      setAddFile(null);
-      setAddUrl("");
-      setShowAdd(false);
+      resetAddForm();
     } finally {
       setUploading(false);
     }
+  };
+
+  const resetAddForm = () => {
+    setAddTitle("");
+    setAddFile(null);
+    setAddUrl("");
+    setShowAdd(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -97,25 +128,22 @@ const LessonMaterials = ({ lessonId }: LessonMaterialsProps) => {
     qc.invalidateQueries({ queryKey: ["lesson-materials-inline", lessonId] });
   };
 
+  const removePending = (index: number) => {
+    setPendingMaterials(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleBrowserSelect = (path: string, name: string) => {
     setAddUrl(path);
     if (!addTitle) setAddTitle(name.replace(/\.[^.]+$/, ""));
   };
 
-  if (!lessonId) {
-    return (
-      <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-        Сохраните урок, чтобы добавить материалы
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-3">
-      {isLoading ? (
+      {isLoading && lessonId ? (
         <Loader2 className="h-4 w-4 animate-spin text-primary mx-auto" />
       ) : (
         <>
+          {/* Saved materials */}
           {materials && materials.length > 0 && (
             <div className="space-y-1.5">
               {materials.map((m) => (
@@ -133,11 +161,29 @@ const LessonMaterials = ({ lessonId }: LessonMaterialsProps) => {
             </div>
           )}
 
+          {/* Pending materials (not yet saved) */}
+          {pendingMaterials.length > 0 && (
+            <div className="space-y-1.5">
+              {pendingMaterials.map((pm, i) => (
+                <div key={i} className="flex items-center gap-3 px-3 py-2.5 bg-accent/10 rounded-lg border border-accent/30 group">
+                  {materialIcon(pm.file?.name || pm.url, pm.type)}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{pm.title}</p>
+                    <p className="text-[11px] text-muted-foreground">Ожидает сохранения</p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removePending(i)}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
           {showAdd ? (
             <div className="space-y-3 p-4 bg-muted/30 rounded-xl border border-border">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium">Новый материал</Label>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setShowAdd(false); setAddFile(null); setAddUrl(""); setAddTitle(""); }}>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={resetAddForm}>
                   <X className="h-3.5 w-3.5" />
                 </Button>
               </div>
@@ -189,7 +235,7 @@ const LessonMaterials = ({ lessonId }: LessonMaterialsProps) => {
                 <Input placeholder="Или вставьте ссылку..." value={addUrl} onChange={(e) => setAddUrl(e.target.value)} className="h-9" />
               )}
 
-              <Button size="sm" onClick={handleAdd} disabled={uploading} className="w-full">
+              <Button size="sm" onClick={addPendingOrSave} disabled={uploading} className="w-full">
                 {uploading ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />Загрузка...</> : "Добавить материал"}
               </Button>
             </div>
@@ -210,6 +256,8 @@ const LessonMaterials = ({ lessonId }: LessonMaterialsProps) => {
       />
     </div>
   );
-};
+});
+
+LessonMaterials.displayName = "LessonMaterials";
 
 export default LessonMaterials;
