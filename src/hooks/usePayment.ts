@@ -213,6 +213,7 @@ export const useUploadReceipt = () => {
         clientName: userName || "Без имени",
         clientTelegram: userTelegram,
         orderId: paymentRequestId,
+        purchaseUrl: window.location.href,
       });
     },
     onSuccess: (_, vars) => {
