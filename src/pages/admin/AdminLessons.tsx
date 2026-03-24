@@ -21,7 +21,7 @@ import LessonMaterials from "@/components/admin/LessonMaterials";
 
 const empty = {
   module_id: "", title: "", description: "",
-  content_type: "video" as string, duration_seconds: 0, sort_order: 0,
+  content_type: "video" as string,
   is_published: true, is_free_preview: false,
   video_storage_path: "",
 };
