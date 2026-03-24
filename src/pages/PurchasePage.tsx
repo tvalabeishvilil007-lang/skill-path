@@ -97,7 +97,7 @@ const PurchasePage = () => {
         courseId: course.id,
         courseTitle: course.title,
         coursePrice: priceFormatted,
-        userName: (profile as any)?.name || user.email,
+        userName: userProfile?.name || user.email,
         userEmail: user.email!,
       });
       toast.success("Реквизиты отправлены в чат!");
@@ -127,7 +127,7 @@ const PurchasePage = () => {
         file,
         courseTitle: course.title,
         coursePrice: priceFormatted,
-        userName: (profile as any)?.name || user.email,
+        userName: userProfile?.name || user.email,
         userEmail: user.email!,
       });
       toast.success("Чек загружен!");
@@ -260,7 +260,7 @@ const PurchasePage = () => {
                   <PaymentChat
                     paymentRequestId={paymentRequest.id}
                     courseTitle={course.title}
-                    userName={(profile as any)?.name || user.email}
+                    userName={userProfile?.name || user.email}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full">
