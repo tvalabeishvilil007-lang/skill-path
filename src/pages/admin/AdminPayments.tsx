@@ -43,6 +43,28 @@ const AdminPayments = () => {
   const [selected, setSelected] = useState<any>(null);
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
+  const [tab, setTab] = useState("requests");
+  const [newDetails, setNewDetails] = useState("");
+  const [savingDetails, setSavingDetails] = useState(false);
+  const { data: activeDetails, refetch: refetchDetails } = useActivePaymentDetails();
+
+  const handleSaveDetails = async () => {
+    if (!newDetails.trim()) return;
+    setSavingDetails(true);
+    try {
+      // Deactivate old
+      await (supabase as any).from("payment_settings").update({ is_active: false }).eq("is_active", true);
+      // Insert new
+      await (supabase as any).from("payment_settings").insert({ payment_details: newDetails.trim(), is_active: true });
+      toast.success("Реквизиты обновлены");
+      refetchDetails();
+      setNewDetails("");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSavingDetails(false);
+    }
+  };
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ["admin-payment-requests"],
