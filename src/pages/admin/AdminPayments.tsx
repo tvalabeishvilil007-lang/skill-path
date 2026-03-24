@@ -380,6 +380,8 @@ const AdminPayments = () => {
           )}
         </DialogContent>
       </Dialog>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
