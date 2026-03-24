@@ -47,6 +47,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/course/:slug" element={<CoursePage />} />
             <Route path="/lesson/:courseSlug/:lessonSlug" element={<LessonPage />} />
+            <Route path="/purchase/:slug" element={<PurchasePage />} />
             <Route path="/access-denied" element={<AccessDenied />} />
 
             {/* Admin CMS */}
