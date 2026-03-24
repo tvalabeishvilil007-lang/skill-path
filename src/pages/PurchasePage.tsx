@@ -31,8 +31,16 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any; p
 
 const PurchasePage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { user, loading: authLoading, profile } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data: course, isLoading: courseLoading } = useCourseBySlug(slug || "");
+  const { data: userProfile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("name, email").eq("id", user!.id).maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
   const { data: paymentRequest, refetch: refetchPR } = usePaymentRequest(course?.id);
   const createPR = useCreatePaymentRequest();
   const uploadReceipt = useUploadReceipt();
