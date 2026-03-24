@@ -82,13 +82,20 @@ const AdminLessons = () => {
 
       const slug = slugify(form.title);
 
+      // Auto-calculate sort_order for new lessons
+      let sortOrder = 0;
+      if (!editItem) {
+        const existing = data?.filter(l => l.module_id === form.module_id) || [];
+        sortOrder = existing.length > 0 ? Math.max(...existing.map(l => l.sort_order)) + 1 : 0;
+      }
+
       const payload = {
         module_id: form.module_id, title: form.title, slug,
         description: form.description || null,
         video_url: videoUrl || null,
         content_type: form.content_type as any,
-        duration_seconds: form.duration_seconds || null, sort_order: form.sort_order,
         is_published: form.is_published, is_free_preview: form.is_free_preview,
+        ...(editItem ? {} : { sort_order: sortOrder }),
       };
 
       if (editItem) {
