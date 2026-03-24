@@ -68,9 +68,11 @@ const CourseCardCompact = ({ course, hasAccess, request, onRequestClick, accessO
               <Badge className={`${STATUS_VARIANTS[request.status] || ""} border text-[10px] ml-auto`}>
                 {STATUS_LABELS[request.status] || request.status}
               </Badge>
-            ) : !accessOnly && onRequestClick ? (
-              <Button size="sm" className="rounded-lg text-xs h-8 ml-auto" onClick={onRequestClick}>
-                Оформить заявку
+            ) : !accessOnly ? (
+              <Button asChild size="sm" className="rounded-lg text-xs h-8 ml-auto">
+                <Link to={`/purchase/${course.slug}`}>
+                  Купить <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
               </Button>
             ) : null}
           </div>
