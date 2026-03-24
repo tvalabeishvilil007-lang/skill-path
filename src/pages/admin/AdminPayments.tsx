@@ -184,8 +184,51 @@ const AdminPayments = () => {
 
   return (
     <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Оплаты</h1>
+
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList className="h-10 rounded-xl">
+          <TabsTrigger value="requests" className="rounded-lg gap-1.5 text-sm">
+            <CreditCard className="h-4 w-4" /> Заявки
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="rounded-lg gap-1.5 text-sm">
+            <Settings className="h-4 w-4" /> Реквизиты
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="settings" className="space-y-4 mt-4">
+          <Card className="rounded-2xl">
+            <CardContent className="p-5 space-y-4">
+              <h3 className="font-semibold">Текущие реквизиты</h3>
+              {activeDetails ? (
+                <div className="rounded-xl bg-muted/30 p-4">
+                  <p className="whitespace-pre-wrap text-sm">{activeDetails.payment_details}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Обновлено: {new Date(activeDetails.updated_at).toLocaleString("ru-RU")}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Реквизиты пока не настроены</p>
+              )}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Новые реквизиты</h4>
+                <Textarea
+                  value={newDetails}
+                  onChange={(e) => setNewDetails(e.target.value)}
+                  placeholder="Карта: 1234 5678 9012 3456&#10;Банк: Сбербанк&#10;ФИО: Иванов Иван&#10;USDT TRC20: T..."
+                  className="rounded-xl min-h-[100px]"
+                />
+                <Button onClick={handleSaveDetails} disabled={!newDetails.trim() || savingDetails} className="rounded-xl">
+                  {savingDetails ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Сохранить реквизиты
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="requests" className="space-y-4 mt-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Заявки на оплату</h1>
         <Badge variant="secondary" className="text-xs">{requests?.length || 0} всего</Badge>
       </div>
 
