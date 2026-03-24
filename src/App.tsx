@@ -11,6 +11,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import CoursePage from "./pages/CoursePage";
+import PurchasePage from "./pages/PurchasePage";
 import LessonPage from "./pages/LessonPage";
 import NotFound from "./pages/NotFound";
 import AccessDenied from "./pages/AccessDenied";
