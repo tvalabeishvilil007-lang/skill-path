@@ -16,6 +16,7 @@ const empty = { course_id: "", title: "", description: "", sort_order: 0, is_pub
 const AdminModules = () => {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [editItem, setEditItem] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(empty);
@@ -58,14 +59,18 @@ const AdminModules = () => {
     qc.invalidateQueries({ queryKey: ["admin-modules"] });
   };
 
-  const openCreate = () => { setEditItem(null); setForm(empty); setOpen(true); };
+  const openCreate = () => { setEditItem(null); setForm({ ...empty, course_id: selectedCourseId }); setOpen(true); };
   const openEdit = (item: any) => {
     setEditItem(item);
     setForm({ course_id: item.course_id, title: item.title, description: item.description || "", sort_order: item.sort_order, is_published: item.is_published });
     setOpen(true);
   };
 
-  const filtered = data?.filter((m) => m.title.toLowerCase().includes(search.toLowerCase())) || [];
+  const filtered = data?.filter((m) => {
+    const matchesSearch = m.title.toLowerCase().includes(search.toLowerCase());
+    const matchesCourse = selectedCourseId ? m.course_id === selectedCourseId : true;
+    return matchesSearch && matchesCourse;
+  }) || [];
 
   return (
     <div className="space-y-6">
@@ -74,9 +79,20 @@ const AdminModules = () => {
         <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> Добавить</Button>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="w-64">
+          <Select value={selectedCourseId || "all"} onValueChange={(v) => setSelectedCourseId(v === "all" ? "" : v)}>
+            <SelectTrigger><SelectValue placeholder="Все курсы" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все курсы</SelectItem>
+              {courses?.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
       </div>
 
       {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" /> : (
@@ -117,13 +133,20 @@ const AdminModules = () => {
             <DialogDescription>Заполните данные модуля</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Курс</Label>
-              <Select value={form.course_id} onValueChange={(v) => setForm({ ...form, course_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Выберите курс" /></SelectTrigger>
-                <SelectContent>{courses?.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
+            {selectedCourseId && !editItem ? (
+              <div className="space-y-2">
+                <Label>Курс</Label>
+                <Input value={courses?.find(c => c.id === selectedCourseId)?.title || ""} disabled />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Курс</Label>
+                <Select value={form.course_id} onValueChange={(v) => setForm({ ...form, course_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Выберите курс" /></SelectTrigger>
+                  <SelectContent>{courses?.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2"><Label>Название</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
             <div className="space-y-2"><Label>Описание</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
             <div className="space-y-2"><Label>Порядок</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} /></div>
