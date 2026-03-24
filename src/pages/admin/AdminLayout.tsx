@@ -23,6 +23,7 @@ const contentNav = [
 
 const salesNav = [
   { to: "/admin/requests", label: "Заявки", icon: ClipboardList },
+  { to: "/admin/payments", label: "Оплаты", icon: Receipt },
   { to: "/admin/orders", label: "Заказы", icon: Receipt },
 ];
 

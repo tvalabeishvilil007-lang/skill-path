@@ -11,6 +11,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import CoursePage from "./pages/CoursePage";
+import PurchasePage from "./pages/PurchasePage";
 import LessonPage from "./pages/LessonPage";
 import NotFound from "./pages/NotFound";
 import AccessDenied from "./pages/AccessDenied";
@@ -26,6 +27,7 @@ import AdminLessons from "./pages/admin/AdminLessons";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminRequests from "./pages/admin/AdminRequests";
+import AdminPayments from "./pages/admin/AdminPayments";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/course/:slug" element={<CoursePage />} />
             <Route path="/lesson/:courseSlug/:lessonSlug" element={<LessonPage />} />
+            <Route path="/purchase/:slug" element={<PurchasePage />} />
             <Route path="/access-denied" element={<AccessDenied />} />
 
             {/* Admin CMS */}
@@ -58,6 +61,7 @@ const App = () => (
               <Route path="users" element={<AdminUsers />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="requests" element={<AdminRequests />} />
+              <Route path="payments" element={<AdminPayments />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

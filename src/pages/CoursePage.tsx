@@ -133,14 +133,11 @@ const CoursePage = () => {
                       Начать обучение <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
-                ) : existingRequest ? (
-                  <div className="text-center space-y-3 py-2">
-                    <Badge className="bg-primary/10 text-primary border border-primary/20 text-sm px-4 py-1.5">Заявка отправлена</Badge>
-                    <p className="text-sm text-muted-foreground">Менеджер свяжется с вами в Telegram</p>
-                  </div>
                 ) : (
-                  <Button className="w-full rounded-xl h-12 text-base glow-primary" size="lg" onClick={() => setRequestOpen(true)}>
-                    Оформить заявку
+                  <Button asChild className="w-full rounded-xl h-12 text-base glow-primary" size="lg">
+                    <Link to={`/purchase/${course.slug}`}>
+                      Оформить покупку <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
                   </Button>
                 )}
               </CardContent>
