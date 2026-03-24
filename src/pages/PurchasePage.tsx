@@ -16,7 +16,7 @@ import {
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any; progress: number }> = {
   created: { label: "Создана", color: "bg-muted text-muted-foreground", icon: Clock, progress: 10 },
