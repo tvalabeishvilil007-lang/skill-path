@@ -59,7 +59,7 @@ const AdminModules = () => {
     qc.invalidateQueries({ queryKey: ["admin-modules"] });
   };
 
-  const openCreate = () => { setEditItem(null); setForm(empty); setOpen(true); };
+  const openCreate = () => { setEditItem(null); setForm({ ...empty, course_id: selectedCourseId }); setOpen(true); };
   const openEdit = (item: any) => {
     setEditItem(item);
     setForm({ course_id: item.course_id, title: item.title, description: item.description || "", sort_order: item.sort_order, is_published: item.is_published });
