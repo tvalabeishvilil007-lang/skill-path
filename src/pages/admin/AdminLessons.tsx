@@ -347,7 +347,7 @@ const AdminLessons = () => {
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <FileText className="h-4 w-4" />Файлы урока
               </h3>
-              <LessonMaterials lessonId={editItem?.id || null} />
+              <LessonMaterials ref={materialsRef} lessonId={editItem?.id || null} />
             </section>
 
             {/* ── Section: Настройки ── */}
