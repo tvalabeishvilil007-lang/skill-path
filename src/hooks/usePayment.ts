@@ -115,6 +115,7 @@ export const useCreatePaymentRequest = () => {
         amount: coursePrice,
         status: "new",
         message: `Новый запрос реквизитов от ${userName || userEmail || "пользователя"}`,
+        purchaseUrl: window.location.href,
       });
 
       return pr;
@@ -154,6 +155,7 @@ export const useSendPaymentMessage = () => {
         clientName: userName || "",
         clientTelegram: userTelegram,
         text: content,
+        purchaseUrl: window.location.href,
       });
     },
     onSuccess: (_, vars) => {
@@ -211,6 +213,7 @@ export const useUploadReceipt = () => {
         clientName: userName || "Без имени",
         clientTelegram: userTelegram,
         orderId: paymentRequestId,
+        purchaseUrl: window.location.href,
       });
     },
     onSuccess: (_, vars) => {

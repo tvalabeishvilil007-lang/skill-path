@@ -5,7 +5,9 @@ export const externalApi = {
     const res = await fetch(`${API_BASE}/payment-details`);
     if (!res.ok) throw new Error("Failed to fetch payment details");
     const data = await res.json();
-    return data.details || data.payment_details || JSON.stringify(data);
+    const raw = data.paymentDetails || data.details || data.payment_details;
+    if (!raw) return JSON.stringify(data);
+    return String(raw).replace(/\\n/g, "\n");
   },
 
   async notifyOrder(body: {
@@ -16,6 +18,7 @@ export const externalApi = {
     amount: string;
     status: string;
     message?: string;
+    purchaseUrl?: string;
   }) {
     try {
       await fetch(`${API_BASE}/notify-order`, {
@@ -34,6 +37,7 @@ export const externalApi = {
     clientName: string;
     clientTelegram?: string;
     orderId: string;
+    purchaseUrl?: string;
   }) {
     try {
       const formData = new FormData();
@@ -42,6 +46,7 @@ export const externalApi = {
       formData.append("clientName", body.clientName);
       if (body.clientTelegram) formData.append("clientTelegram", body.clientTelegram);
       formData.append("orderId", body.orderId);
+      if (body.purchaseUrl) formData.append("purchaseUrl", body.purchaseUrl);
 
       await fetch(`${API_BASE}/upload-receipt`, {
         method: "POST",
@@ -58,6 +63,7 @@ export const externalApi = {
     clientName: string;
     clientTelegram?: string;
     text: string;
+    purchaseUrl?: string;
   }) {
     try {
       await fetch(`${API_BASE}/notify-message`, {
