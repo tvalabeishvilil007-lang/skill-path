@@ -137,8 +137,8 @@ const AdminLessons = () => {
     setForm({
       module_id: item.module_id, title: item.title,
       description: item.description || "",
-      content_type: item.content_type, duration_seconds: item.duration_seconds || 0,
-      sort_order: item.sort_order, is_published: item.is_published,
+      content_type: item.content_type,
+      is_published: item.is_published,
       is_free_preview: item.is_free_preview,
       video_storage_path: item.video_url || "",
     });
