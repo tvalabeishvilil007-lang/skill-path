@@ -105,13 +105,16 @@ const AdminLessons = () => {
         if (error) { toast.error(error.message); return; }
         toast.success("Урок обновлён");
       } else {
-        const { error } = await supabase.from("lessons").insert(payload);
+        const { data: inserted, error } = await supabase.from("lessons").insert(payload).select("id").single();
         if (error) {
           if (error.message.includes("duplicate") || error.message.includes("unique")) {
             payload.slug = slug + "-" + Date.now().toString(36);
-            const { error: e2 } = await supabase.from("lessons").insert(payload);
+            const { data: inserted2, error: e2 } = await supabase.from("lessons").insert(payload).select("id").single();
             if (e2) { toast.error(e2.message); return; }
+            if (inserted2) await savePendingMaterials(inserted2.id);
           } else { toast.error(error.message); return; }
+        } else if (inserted) {
+          await savePendingMaterials(inserted.id);
         }
         toast.success("Урок создан");
       }
