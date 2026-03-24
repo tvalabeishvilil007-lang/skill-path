@@ -19,7 +19,6 @@ const contentNav = [
   { to: "/admin/courses", label: "Курсы", icon: BookOpen },
   { to: "/admin/modules", label: "Модули", icon: Layers },
   { to: "/admin/lessons", label: "Уроки", icon: Play },
-  { to: "/admin/materials", label: "Материалы", icon: FileText },
 ];
 
 const salesNav = [
