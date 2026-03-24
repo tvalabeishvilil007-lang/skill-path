@@ -22,7 +22,7 @@ import AdminCategories from "./pages/admin/AdminCategories";
 import AdminCourses from "./pages/admin/AdminCourses";
 import AdminModules from "./pages/admin/AdminModules";
 import AdminLessons from "./pages/admin/AdminLessons";
-import AdminMaterials from "./pages/admin/AdminMaterials";
+
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminRequests from "./pages/admin/AdminRequests";
