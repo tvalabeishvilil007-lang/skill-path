@@ -9,8 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Eye, CheckCircle, Search, XCircle, CreditCard, MessageSquare, Send } from "lucide-react";
+import { Loader2, Eye, CheckCircle, Search, XCircle, CreditCard, MessageSquare, Send, Settings } from "lucide-react";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useActivePaymentDetails } from "@/hooks/usePayment";
 
 const STATUS_LABELS: Record<string, string> = {
   created: "Создана",
