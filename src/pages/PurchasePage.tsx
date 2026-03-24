@@ -263,6 +263,7 @@ const PurchasePage = () => {
                     paymentRequestId={paymentRequest.id}
                     courseTitle={course.title}
                     userName={userProfile?.name || user.email}
+                    userTelegram={userProfile?.telegram_id || undefined}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full">
