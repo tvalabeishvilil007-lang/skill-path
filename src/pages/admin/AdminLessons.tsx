@@ -38,6 +38,7 @@ const AdminLessons = () => {
   const [uploading, setUploading] = useState(false);
   const videoRef = useRef<HTMLInputElement>(null);
   const [videoBrowserOpen, setVideoBrowserOpen] = useState(false);
+  const materialsRef = useRef<LessonMaterialsHandle>(null);
 
   const { data: modules } = useQuery({
     queryKey: ["admin-modules-list"],
