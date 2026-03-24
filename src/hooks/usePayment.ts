@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { externalApi } from "@/lib/externalApi";
 
 export const usePaymentRequest = (courseId: string | undefined) => {
   const { user } = useAuth();
@@ -61,25 +62,30 @@ export const useCreatePaymentRequest = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ courseId, courseTitle, coursePrice, userName, userEmail }: {
+    mutationFn: async ({ courseId, courseTitle, coursePrice, userName, userEmail, userTelegram }: {
       courseId: string;
       courseTitle: string;
       coursePrice: string;
       userName?: string;
       userEmail?: string;
+      userTelegram?: string;
     }) => {
-      // Get active payment details
-      const { data: settings } = await (supabase as any)
-        .from("payment_settings")
-        .select("payment_details")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Get payment details from external API first, fallback to DB
+      let paymentDetails: string;
+      try {
+        paymentDetails = await externalApi.getPaymentDetails();
+      } catch {
+        const { data: settings } = await (supabase as any)
+          .from("payment_settings")
+          .select("payment_details")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        paymentDetails = settings?.payment_details || "Реквизиты пока не настроены.";
+      }
 
-      const paymentDetails = settings?.payment_details || "Реквизиты пока не настроены. Администратор скоро их добавит.";
-
-      // Create payment request
+      // Create payment request in DB
       const { data: pr, error } = await (supabase as any)
         .from("payment_requests")
         .insert({
@@ -100,21 +106,16 @@ export const useCreatePaymentRequest = () => {
         content: paymentDetails,
       });
 
-      // Notify Telegram
-      try {
-        await supabase.functions.invoke("telegram-notify", {
-          body: {
-            action: "new_payment_request",
-            payment_request_id: pr.id,
-            course_title: courseTitle,
-            course_price: coursePrice,
-            user_name: userName,
-            user_email: userEmail,
-          },
-        });
-      } catch (e) {
-        console.warn("Telegram notify failed:", e);
-      }
+      // Notify via external VPS API
+      await externalApi.notifyOrder({
+        courseTitle,
+        clientName: userName || "Без имени",
+        clientTelegram: userTelegram,
+        orderId: pr.id,
+        amount: coursePrice,
+        status: "new",
+        message: `Новый запрос реквизитов от ${userName || userEmail || "пользователя"}`,
+      });
 
       return pr;
     },
@@ -130,11 +131,12 @@ export const useSendPaymentMessage = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ paymentRequestId, content, courseTitle, userName }: {
+    mutationFn: async ({ paymentRequestId, content, courseTitle, userName, userTelegram }: {
       paymentRequestId: string;
       content: string;
       courseTitle?: string;
       userName?: string;
+      userTelegram?: string;
     }) => {
       const { error } = await (supabase as any).from("payment_messages").insert({
         payment_request_id: paymentRequestId,
@@ -145,20 +147,14 @@ export const useSendPaymentMessage = () => {
       });
       if (error) throw error;
 
-      // Notify Telegram
-      try {
-        await supabase.functions.invoke("telegram-notify", {
-          body: {
-            action: "client_message",
-            payment_request_id: paymentRequestId,
-            message: content,
-            course_title: courseTitle,
-            user_name: userName,
-          },
-        });
-      } catch (e) {
-        console.warn("Telegram notify failed:", e);
-      }
+      // Notify via external VPS API
+      await externalApi.notifyMessage({
+        orderId: paymentRequestId,
+        courseTitle: courseTitle || "",
+        clientName: userName || "",
+        clientTelegram: userTelegram,
+        text: content,
+      });
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ["payment-messages", vars.paymentRequestId] });
@@ -171,13 +167,14 @@ export const useUploadReceipt = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ paymentRequestId, file, courseTitle, coursePrice, userName, userEmail }: {
+    mutationFn: async ({ paymentRequestId, file, courseTitle, coursePrice, userName, userEmail, userTelegram }: {
       paymentRequestId: string;
       file: File;
       courseTitle?: string;
       coursePrice?: string;
       userName?: string;
       userEmail?: string;
+      userTelegram?: string;
     }) => {
       const ext = file.name.split(".").pop();
       const path = `${user!.id}/${paymentRequestId}.${ext}`;
@@ -207,21 +204,14 @@ export const useUploadReceipt = () => {
         content: "Чек загружен и отправлен на проверку",
       });
 
-      // Notify Telegram
-      try {
-        await supabase.functions.invoke("telegram-notify", {
-          body: {
-            action: "receipt_uploaded",
-            payment_request_id: paymentRequestId,
-            course_title: courseTitle,
-            course_price: coursePrice,
-            user_name: userName,
-            user_email: userEmail,
-          },
-        });
-      } catch (e) {
-        console.warn("Telegram notify failed:", e);
-      }
+      // Notify via external VPS API
+      await externalApi.uploadReceipt({
+        file,
+        courseTitle: courseTitle || "",
+        clientName: userName || "Без имени",
+        clientTelegram: userTelegram,
+        orderId: paymentRequestId,
+      });
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ["payment-request"] });
