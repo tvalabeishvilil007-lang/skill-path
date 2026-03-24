@@ -36,7 +36,7 @@ const PurchasePage = () => {
   const { data: userProfile } = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("name, email").eq("id", user!.id).maybeSingle();
+      const { data } = await supabase.from("profiles").select("name, email, telegram_id").eq("id", user!.id).maybeSingle();
       return data;
     },
     enabled: !!user?.id,
@@ -99,6 +99,7 @@ const PurchasePage = () => {
         coursePrice: priceFormatted,
         userName: userProfile?.name || user.email,
         userEmail: user.email!,
+        userTelegram: userProfile?.telegram_id || undefined,
       });
       toast.success("Реквизиты отправлены в чат!");
     } catch (e: any) {
@@ -129,6 +130,7 @@ const PurchasePage = () => {
         coursePrice: priceFormatted,
         userName: userProfile?.name || user.email,
         userEmail: user.email!,
+        userTelegram: userProfile?.telegram_id || undefined,
       });
       toast.success("Чек загружен!");
     } catch (e: any) {
@@ -261,6 +263,7 @@ const PurchasePage = () => {
                     paymentRequestId={paymentRequest.id}
                     courseTitle={course.title}
                     userName={userProfile?.name || user.email}
+                    userTelegram={userProfile?.telegram_id || undefined}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full">

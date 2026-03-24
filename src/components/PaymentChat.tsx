@@ -10,6 +10,7 @@ interface PaymentChatProps {
   paymentRequestId: string;
   courseTitle?: string;
   userName?: string;
+  userTelegram?: string;
 }
 
 const MESSAGE_ICONS: Record<string, any> = {
@@ -19,7 +20,7 @@ const MESSAGE_ICONS: Record<string, any> = {
   text: MessageSquare,
 };
 
-const PaymentChat = ({ paymentRequestId, courseTitle, userName }: PaymentChatProps) => {
+const PaymentChat = ({ paymentRequestId, courseTitle, userName, userTelegram }: PaymentChatProps) => {
   const { data: messages, refetch } = usePaymentMessages(paymentRequestId);
   const sendMessage = useSendPaymentMessage();
   const [input, setInput] = useState("");
@@ -53,6 +54,7 @@ const PaymentChat = ({ paymentRequestId, courseTitle, userName }: PaymentChatPro
       content: input.trim(),
       courseTitle,
       userName,
+      userTelegram,
     });
     setInput("");
   };
