@@ -290,8 +290,17 @@ const AdminLessons = () => {
                   <Label>Модуль</Label>
                   <Select value={form.module_id} onValueChange={(v) => setForm({ ...form, module_id: v })}>
                     <SelectTrigger><SelectValue placeholder="Выберите модуль" /></SelectTrigger>
-                    <SelectContent>{modules?.map((m) => <SelectItem key={m.id} value={m.id}>{(m.courses as any)?.title} → {m.title}</SelectItem>)}</SelectContent>
+                    <SelectContent>
+                      {(selectedCourseId ? filteredModules : modules)?.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>
+                          {selectedCourseId ? m.title : `${(m.courses as any)?.title} → ${m.title}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
+                  {selectedCourseId && filteredModules?.length === 0 && (
+                    <p className="text-xs text-muted-foreground">Нет модулей для выбранного курса</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Тип контента</Label>
