@@ -66,7 +66,11 @@ const AdminModules = () => {
     setOpen(true);
   };
 
-  const filtered = data?.filter((m) => m.title.toLowerCase().includes(search.toLowerCase())) || [];
+  const filtered = data?.filter((m) => {
+    const matchesSearch = m.title.toLowerCase().includes(search.toLowerCase());
+    const matchesCourse = selectedCourseId ? m.course_id === selectedCourseId : true;
+    return matchesSearch && matchesCourse;
+  }) || [];
 
   return (
     <div className="space-y-6">
