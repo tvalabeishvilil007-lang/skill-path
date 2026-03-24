@@ -133,13 +133,20 @@ const AdminModules = () => {
             <DialogDescription>Заполните данные модуля</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Курс</Label>
-              <Select value={form.course_id} onValueChange={(v) => setForm({ ...form, course_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Выберите курс" /></SelectTrigger>
-                <SelectContent>{courses?.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
+            {selectedCourseId && !editItem ? (
+              <div className="space-y-2">
+                <Label>Курс</Label>
+                <Input value={courses?.find(c => c.id === selectedCourseId)?.title || ""} disabled />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Курс</Label>
+                <Select value={form.course_id} onValueChange={(v) => setForm({ ...form, course_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Выберите курс" /></SelectTrigger>
+                  <SelectContent>{courses?.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2"><Label>Название</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
             <div className="space-y-2"><Label>Описание</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
             <div className="space-y-2"><Label>Порядок</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} /></div>
