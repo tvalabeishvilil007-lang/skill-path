@@ -17,7 +17,7 @@ import {
 import { slugify } from "@/lib/slugify";
 import { uploadFile } from "@/lib/storage";
 import StorageFileBrowser from "@/components/admin/StorageFileBrowser";
-import LessonMaterials from "@/components/admin/LessonMaterials";
+import LessonMaterials, { type LessonMaterialsHandle, type PendingMaterial } from "@/components/admin/LessonMaterials";
 
 const empty = {
   module_id: "", title: "", description: "",
