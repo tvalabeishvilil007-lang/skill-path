@@ -79,9 +79,20 @@ const AdminModules = () => {
         <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> Добавить</Button>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="w-64">
+          <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+            <SelectTrigger><SelectValue placeholder="Все курсы" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все курсы</SelectItem>
+              {courses?.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
       </div>
 
       {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" /> : (
