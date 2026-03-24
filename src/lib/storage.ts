@@ -1,15 +1,32 @@
 import { supabase } from "@/integrations/supabase/client";
 
-type Bucket = 'course-videos' | 'course-materials' | 'course-covers';
+type Bucket = "course-videos" | "course-materials" | "course-covers";
 
 export async function uploadFile(bucket: Bucket, file: File, path?: string) {
-  const ext = file.name.split('.').pop() || '';
-  const filePath = path || `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  
+  const cleanFileName = file.name
+    .toLowerCase()
+    .replace(/[^a-z0-9.\-]/g, "_");
+
+  let filePath: string;
+
+  if (path) {
+    const parts = path.split("/");
+    const originalName = parts.pop() || `${Date.now()}-${cleanFileName}`;
+    const folder = parts.join("/");
+
+    const safeName = originalName
+      .toLowerCase()
+      .replace(/[^a-z0-9.\-]/g, "_");
+
+    filePath = folder ? `${folder}/${safeName}` : safeName;
+  } else {
+    filePath = `${Date.now()}-${cleanFileName}`;
+  }
+
   const { data, error } = await supabase.storage
     .from(bucket)
     .upload(filePath, file, { upsert: true });
-  
+
   if (error) throw error;
   return data.path;
 }
@@ -28,6 +45,7 @@ export async function getSignedUrl(bucket: Bucket, path: string, expiresIn = 360
   const { data, error } = await supabase.storage
     .from(bucket)
     .createSignedUrl(path, expiresIn);
+
   if (error) throw error;
   return data.signedUrl;
 }
