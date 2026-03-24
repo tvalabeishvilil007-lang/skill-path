@@ -54,6 +54,7 @@ const PaymentChat = ({ paymentRequestId, courseTitle, userName, userTelegram }: 
       content: input.trim(),
       courseTitle,
       userName,
+      userTelegram,
     });
     setInput("");
   };
