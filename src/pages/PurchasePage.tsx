@@ -36,7 +36,7 @@ const PurchasePage = () => {
   const { data: userProfile } = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("name, email").eq("id", user!.id).maybeSingle();
+      const { data } = await supabase.from("profiles").select("name, email, telegram_id").eq("id", user!.id).maybeSingle();
       return data;
     },
     enabled: !!user?.id,
