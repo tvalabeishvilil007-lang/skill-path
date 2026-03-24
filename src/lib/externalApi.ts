@@ -37,6 +37,7 @@ export const externalApi = {
     clientName: string;
     clientTelegram?: string;
     orderId: string;
+    purchaseUrl?: string;
   }) {
     try {
       const formData = new FormData();
@@ -45,6 +46,7 @@ export const externalApi = {
       formData.append("clientName", body.clientName);
       if (body.clientTelegram) formData.append("clientTelegram", body.clientTelegram);
       formData.append("orderId", body.orderId);
+      if (body.purchaseUrl) formData.append("purchaseUrl", body.purchaseUrl);
 
       await fetch(`${API_BASE}/upload-receipt`, {
         method: "POST",
