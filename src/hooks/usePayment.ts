@@ -155,6 +155,7 @@ export const useSendPaymentMessage = () => {
         clientName: userName || "",
         clientTelegram: userTelegram,
         text: content,
+        purchaseUrl: window.location.href,
       });
     },
     onSuccess: (_, vars) => {
