@@ -18,6 +18,7 @@ export const externalApi = {
     amount: string;
     status: string;
     message?: string;
+    purchaseUrl?: string;
   }) {
     try {
       await fetch(`${API_BASE}/notify-order`, {
