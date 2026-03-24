@@ -16,6 +16,7 @@ const empty = { course_id: "", title: "", description: "", sort_order: 0, is_pub
 const AdminModules = () => {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [editItem, setEditItem] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(empty);
