@@ -130,6 +130,7 @@ const PurchasePage = () => {
         coursePrice: priceFormatted,
         userName: userProfile?.name || user.email,
         userEmail: user.email!,
+        userTelegram: userProfile?.telegram_id || undefined,
       });
       toast.success("Чек загружен!");
     } catch (e: any) {
