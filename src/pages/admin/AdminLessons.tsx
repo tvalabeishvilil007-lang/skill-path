@@ -330,16 +330,6 @@ const AdminLessons = () => {
             {/* ── Section: Настройки ── */}
             <section className="space-y-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Настройки</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Длительность (сек)</Label>
-                  <Input type="number" value={form.duration_seconds} onChange={(e) => setForm({ ...form, duration_seconds: Number(e.target.value) })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Порядок</Label>
-                  <Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} />
-                </div>
-              </div>
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2.5">
                   <Switch id="les-pub" checked={form.is_published} onCheckedChange={(v) => setForm({ ...form, is_published: v })} />
