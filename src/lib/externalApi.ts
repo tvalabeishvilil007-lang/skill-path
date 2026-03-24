@@ -5,7 +5,9 @@ export const externalApi = {
     const res = await fetch(`${API_BASE}/payment-details`);
     if (!res.ok) throw new Error("Failed to fetch payment details");
     const data = await res.json();
-    return data.details || data.payment_details || JSON.stringify(data);
+    const raw = data.paymentDetails || data.details || data.payment_details;
+    if (!raw) return JSON.stringify(data);
+    return String(raw).replace(/\\n/g, "\n");
   },
 
   async notifyOrder(body: {
