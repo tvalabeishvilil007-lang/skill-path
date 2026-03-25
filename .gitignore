@@ -23,3 +23,28 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# env variants
+.env.local
+.env.production
+.env.development
+
+# build
+build
+.out
+
+# cache
+.cache
+.tmp
+
+# supabase (если вдруг)
+.supabase
+
+# system
+*.pid
+*.seed
+
+# optional
+coverage
+.env.*
+!.env.example

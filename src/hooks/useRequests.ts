@@ -6,10 +6,21 @@ export const useUserRequests = (userId: string | undefined) => {
     queryKey: ["user-requests", userId],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
-        .from("requests")
-        .select("*, courses(title, cover_url, price, currency)")
+        .from("payment_requests")
+        .select(`
+          *,
+          courses (
+            id,
+            title,
+            slug,
+            cover_url,
+            price,
+            currency
+          )
+        `)
         .eq("user_id", userId!)
         .order("created_at", { ascending: false });
+
       if (error) throw error;
       return data;
     },

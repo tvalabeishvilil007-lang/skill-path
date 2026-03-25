@@ -201,7 +201,7 @@ export const useUploadReceipt = () => {
       await (supabase as any).from("payment_messages").insert({
         payment_request_id: paymentRequestId,
         sender_id: user!.id,
-        sender_type: "system",
+        sender_type: "client",
         message_type: "receipt_uploaded",
         content: "Чек загружен и отправлен на проверку",
       });
